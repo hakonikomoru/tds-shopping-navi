@@ -101,6 +101,27 @@ h2 { font-size: 19px; }
 .mtag.food { background: var(--m-food); }
 .mtag.wagon { background: var(--m-wagon); }
 
+/* 待ち列とアプリの案内：色だけでなく文字でも区別 */
+.prep { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px; display: grid; gap: 8px; }
+.prep h2 { font-size: 17px; }
+.prep p { margin: 0; font-size: 14px; }
+.signals { display: flex; flex-wrap: wrap; gap: 6px; }
+.signal { display: inline-block; border-radius: 7px; padding: 3px 8px; font-size: 12px; font-weight: 700; line-height: 1.5; }
+.signal.queue { color: #824300; background: #fff1d6; }
+.signal.required { color: #59389b; background: #eee7fb; }
+.signal.optional { color: #096572; background: #def3f5; }
+.signal.neutral { color: #4b5f6b; background: #edf2f5; }
+.card-guidance { padding: 0 12px 12px; display: grid; gap: 6px; }
+.card-guidance p, .place-guidance { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.6; }
+.place-signals { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+.place-guidance { grid-column: 1 / -1; }
+.need-filter { border: 0; padding: 0; margin: 0; min-width: 0; }
+.need-filter legend { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+.need-buttons { display: flex; flex-wrap: wrap; gap: 6px; }
+.need-buttons button { min-height: 44px; padding: 7px 11px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); font-size: 13px; cursor: pointer; }
+.need-buttons button[aria-pressed="true"] { border-color: var(--harbor); background: var(--harbor-soft); color: #075865; font-weight: 700; }
+.group-head { flex-wrap: wrap; }
+
 /* リスト */
 .filter { display: flex; gap: 8px; }
 .filter button {
@@ -197,6 +218,12 @@ details.place:not([open]) .pin-label::after { content: "地図"; }
 .links { display: grid; gap: 8px; }
 .links a { display: flex; align-items: center; min-height: 48px; padding: 0 14px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; font-weight: 700; font-size: 15px; text-decoration: none; }
 footer { font-size: 12px; color: var(--muted); margin-top: 8px; }
+@media (max-width: 360px) {
+  .card-main { grid-template-columns: 60px minmax(0, 1fr) 52px; gap: 8px; padding: 10px; }
+  .thumb { width: 60px; height: 60px; }
+  .tick { width: 52px; height: 56px; }
+}
+
 @media (prefers-reduced-motion: reduce) { .bar i, details.more > summary::after { transition: none; } }
 </style>
 </head>
@@ -299,7 +326,7 @@ const METHODS = [
     callout: "<b>同じ商品は1人1点まで。</b>2個欲しいときは、二人が各自のアカウントで1個ずつ注文する。チケットを共有していても、1人の注文に2人分はまとめられない。<br><b>入園前は注文できない。</b>23:45は注文できる時間の上限で、在庫の保証ではない。",
     note: "チャーム・ガラスマグ・ファンキャップもアプリで注文できる（予定数はショップと共通）。フィギュアはアプリだとBOXのみ。スタンバイパスはいらない。" },
   { id: "food", label: "飲食店", title: "飲食店で注文", how: "メニューと一緒に注文", items: ["cup", "tumbler", "gummy"],
-    steps: ["対象のお店で、対象メニューにスーベニアを付けて注文する", "グミのケースは「グミキャンディー、ミニスナックケース付き」を注文する"],
+    steps: ["買う店のアプリ表示を確認する。アレンデール・スナグリー・ルックアウトはモバイルオーダーが必要", "それ以外の掲載店は店頭でも注文可。モバイルオーダー対象店はアプリで来店時間と対象メニュー・スーベニアを選べる", "グミのケースは「グミキャンディー、ミニスナックケース付き」を注文する", "モバイルオーダーは来店後に到着ボタンを押し、準備完了の通知で受け取る。受取待ちや席探しは別"],
     callout: "<b>スーベニア単品では買えない。</b>どれも1回の会計で1人1つまで。" },
   { id: "wagon", label: "ワゴン", title: "ポップコーンワゴン", how: "列に並んで購入", items: ["bucket"],
     steps: ["対象のワゴンのどれかに並ぶ", "「バケット付き」を買う（味はワゴンごとに決まっている）"],
@@ -307,6 +334,53 @@ const METHODS = [
 ];
 const METHOD_OF = {};
 METHODS.forEach(m => m.items.forEach(k => { METHOD_OF[k] = m; }));
+// 2026-11-02確認。アプリ条件は公式案内、列は購入経路からの目安（待ち時間の実測ではない）。
+const GUIDANCE = {
+  shop: { queue: true, app: "required", noApp: false,
+    queueLabel: "列に注意：入店・レジ", appLabel: "アプリ必要：入店パス",
+    hint: "入園後にスタンバイパスを確認。指定時刻にも入店・会計待ちの可能性あり。パスは在庫の確保ではありません。" },
+  app: { queue: false, app: "required", noApp: false,
+    queueLabel: "店頭の列なし", appLabel: "アプリ限定：配送注文",
+    hint: "入園後にショッピングで注文。ショップのパスは不要。品切れの可能性があるので、23:45まで待たずに確認。" },
+  food: { queue: true, app: "optional", noApp: true,
+    queueLabel: "混雑時：注文・受取待ち", appLabel: "アプリ任意：対象店で注文",
+    hint: "店頭でも注文できます。対象店ではモバイルオーダーで注文列を省けますが、受取待ちや席探しは別です。" },
+  gummy: { queue: true, app: "conditional", noApp: true,
+    queueLabel: "混雑時：注文・受取待ち", appLabel: "アプリ：店舗による",
+    hint: "FSの3店はモバイルオーダーが必要。他の掲載店では店頭注文も可。各店の表示を見て選べます。" },
+  wagon: { queue: true, app: "none", noApp: true,
+    queueLabel: "列に注意：ワゴン", appLabel: "アプリ不要：直接購入",
+    hint: "現地の列に並んで購入。掲載6ワゴンはモバイルオーダー・スタンバイパスの対象外。近くの列を見て選んで。" },
+};
+const PLACE_ACCESS = {
+  mcduck: "pass", auntpeg: "pass", galleria: "pass",
+  arendelle: "mobileRequired", snuggly: "mobileRequired", lookout: "mobileRequired",
+  zambini: "mobileOptional", refrescos: "mobileOptional", nydeli: "mobileOptional", hudson: "mobileOptional",
+  bayside: "mobileOptional", yucatan: "mobileOptional", casbah: "mobileOptional", sebastian: "mobileOptional",
+  portofino: "counter", biscotti: "counter", liberty: "counter", horizon: "counter", vulcania: "counter",
+  pcDock: "wagon", pcLido: "wagon", pcLiberty: "wagon", pcSoaring: "wagon", pcHorizon: "wagon", pcTink: "wagon",
+};
+const ACCESS = {
+  pass: { tone: "required", label: "アプリ必要：入店パス", wait: "入店・レジ待ちの可能性",
+    detail: "11/2から当面スタンバイパス対象。入園後に取得し、指定時間に列へ。当日の実施・発券状況はアプリで確認。" },
+  mobileRequired: { tone: "required", label: "アプリ必要：モバイル注文", wait: "注文後も受取待ちの可能性",
+    detail: "入園後に公式アプリで来店時間とメニューを選びます。受取枠が取れない場合は、店頭注文できる別の取扱店を選んでください。" },
+  mobileOptional: { tone: "optional", label: "アプリ任意：モバイル注文可", wait: "店頭の注文列・受取待ちの可能性",
+    detail: "店頭レジでも注文可。アプリでは希望スーベニアと対象メニューが選べるか確認して注文。受取待ち・席の確保は別です。" },
+  counter: { tone: "neutral", label: "アプリ不要：店頭注文", wait: "注文・会計待ちの可能性",
+    detail: "モバイルオーダー対象外。現地の注文方法と列の案内に従ってください。" },
+  wagon: { tone: "neutral", label: "アプリ不要：店頭注文", wait: "ワゴンの列に注意",
+    detail: "モバイルオーダー・スタンバイパス対象外。現地で並んで購入します。販売中かは当日の案内で確認。" },
+};
+const NEED_FILTERS = [
+  ["all", "条件なし"], ["queue", "並ぶ可能性あり"],
+  ["app", "アプリ必要・店による"], ["noapp", "アプリなしで買える"],
+];
+const guidanceFor = key => GUIDANCE[key === "gummy" ? "gummy" : METHOD_OF[key].id];
+function matchesNeed(key, filter) {
+  const g = guidanceFor(key);
+  return filter === "queue" ? g.queue : filter === "app" ? ["required", "conditional"].includes(g.app) : filter === "noapp" ? g.noApp : true;
+}
 const TOTAL = Object.values(ITEMS).reduce((a, it) => a + it.qty, 0);
 
 const store = {
@@ -315,22 +389,31 @@ const store = {
 };
 let done = store.get("tds1104-done", {}) || {};
 let onlyLeft = !!store.get("tds1104-onlyleft", false);
+let needFilter = "all"; // 開き直した時は全商品を表示。購入済みの保存キーは維持。
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const mtag = m => `<span class="mtag ${m.id}">${m.label}</span>`;
 const splitHTML = sp => sp === "each" ? '<span class="split each">二人で1個ずつ</span>' : "";
 const CHECK_SVG ='<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 
+function guidanceHTML(g) {
+  const tone = ["required", "conditional"].includes(g.app) ? "required" : g.app === "optional" ? "optional" : "neutral";
+  return `<div class="signals"><span class="signal ${g.queue ? "queue" : "neutral"}">${esc(g.queueLabel)}</span><span class="signal ${tone}">${esc(g.appLabel)}</span></div><p>${esc(g.hint)}</p>`;
+}
+
 function placeHTML(key, extra, chips) {
-  const p = LOC[key];
+  const p = LOC[key], access = ACCESS[PLACE_ACCESS[key]];
   return `<details class="place">
     <summary>
       <span class="pname">${esc(p.name)}</span>
       <span class="pin"><span class="pin-label"></span></span>
       ${chips ? `<span class="chips">${chips}</span>` : `<span class="parea">${esc(p.area)}</span>`}
       ${extra ? `<span class="pextra">${esc(extra)}</span>` : ""}
+      <span class="place-signals"><span class="signal ${access.tone}">${esc(access.label)}</span></span>
+      <span class="place-guidance">${esc(access.wait)}</span>
     </summary>
     <div class="place-body">
+      <p class="note">${esc(access.detail)}</p>
       <a href="img/${p.img}" target="_blank" rel="noopener"><img data-src="img/${p.img}" alt="${esc(p.name)}の場所（公式マップ）" width="800" height="450"></a>
       <div class="place-links"><span class="note">地図をタップで拡大</span><a href="${OFFICIAL}${p.url}" target="_blank" rel="noopener">公式の店舗ページ</a></div>
     </div></details>`;
@@ -352,6 +435,7 @@ function cardHTML(key) {
       </div>
       <button class="tick" data-key="${key}" aria-pressed="false" aria-label="${esc(it.short)}を買えた">${CHECK_SVG}<span class="tick-label">買えた</span></button>
     </div>
+    <div class="card-guidance">${guidanceHTML(guidanceFor(key))}</div>
     ${variants}
     <details class="more">
       <summary>${moreLabel}</summary>
@@ -367,7 +451,12 @@ function cardHTML(key) {
 
 const VIEWS = {
   list() {
-    return `<div class="rule-box">
+    return `<section class="prep" aria-label="並ぶものとアプリの準備">
+        <h2>先に見る：列とアプリ</h2>
+        <p><b>ショップ・バケットは列に注意。</b>ショップはまず入店パス、バッジはアプリで配送注文。</p>
+        <p class="note">紫＝アプリ必要／店舗による、青緑＝任意、灰＝不要。列の表示は目安で、今の待ち時間ではありません。</p>
+      </section>
+      <div class="rule-box">
         <h2>先に確認：買える数のルール</h2>
         <ul>
           <li>同じ商品は<b>1人1個まで</b>。2個の物は二人で1個ずつ買う</li>
@@ -379,17 +468,24 @@ const VIEWS = {
         <button data-filter="all" aria-pressed="${!onlyLeft}">ぜんぶ</button>
         <button data-filter="left" aria-pressed="${onlyLeft}">まだ買ってないもの</button>
       </div>
+      <fieldset class="need-filter">
+        <legend>列・アプリで絞り込む</legend>
+        <div class="need-buttons">${NEED_FILTERS.map(([id, label]) => `<button data-need="${id}" aria-pressed="${needFilter === id}">${label}</button>`).join("")}</div>
+      </fieldset>
+      <p class="note" id="filter-result" role="status" aria-live="polite"></p>
       ${METHODS.map(m => `<div class="group" data-method="${m.id}">
         <div class="group-head">${mtag(m)}<h2>${m.title}</h2><span class="how">${m.how}</span></div>
         ${m.items.map(cardHTML).join("")}
       </div>`).join("")}
       <p class="note" id="all-done-note" hidden>ぜんぶ買えました。</p>
+      <p class="note" id="no-match-note" hidden>この条件に合う商品はありません。「条件なし」や「ぜんぶ」に戻すと確認できます。</p>
+      <p class="note">「アプリなしで買える」は、店頭注文できる店がある商品です。グミケースはFSの3店を除きます。販売方法は当日も確認してください。</p>
       <p class="note">「買えた」はこの端末だけに保存されます。バッジ2個は仮の数です。</p>`;
   },
   where() {
     const byLoc = {};
     Object.keys(ITEMS).forEach(k => (ITEMS[k].places || []).forEach(([l]) => { (byLoc[l] = byLoc[l] || []).push(k); }));
-    return `<p class="view-intro">いるエリアの近くで買えるものを探せます。お店をタップすると地図が出ます。ぬいぐるみバッジはアプリ注文なので、場所に関係なく入園後いつでも。</p>
+    return `<p class="view-intro">いるエリアの近くで買えるものを探せます。お店をタップすると地図が出ます。ぬいぐるみバッジはアプリ注文なので、場所に関係なく入園後に注文（当日23:45まで・在庫次第）。店舗名の下で、アプリの要否と待ち列を確認できます。</p>
       ${AREAS.map(a => {
         const locs = Object.keys(LOC).filter(l => LOC[l].area === a && byLoc[l]);
         if (!locs.length) return "";
@@ -403,6 +499,7 @@ const VIEWS = {
     return METHODS.map(m => `<section class="method">
         <div class="group-head">${mtag(m)}<h2>${m.title}</h2></div>
         <div class="for">対象：${m.items.map(k => ITEMS[k].short).join("・")}</div>
+        <div class="card-guidance">${guidanceHTML(m.id === "food" ? { ...GUIDANCE.gummy, hint: "店によって注文方法が異なります。FSの3店はモバイルオーダーが必要。ほかは店頭注文も選べます。" } : GUIDANCE[m.id])}</div>
         <ol class="steps">${m.steps.map(x => `<li>${x}</li>`).join("")}</ol>
         <div class="callout">${m.callout}</div>
         ${m.note ? `<p class="note">${m.note}</p>` : ""}
@@ -410,6 +507,17 @@ const VIEWS = {
   },
   rules() {
     return `<section class="method">
+        <h2>列とアプリ表示の見方</h2>
+        <ul class="points">
+          <li>「列に注意」は、ショップやワゴンで待ち時間を見込むための目安。現在の混雑や待ち時間の実測ではありません</li>
+          <li>スタンバイパスは指定時刻に並ぶためのもの。待ち時間ゼロ・商品の取り置きは保証しません</li>
+          <li>モバイルオーダーは飲食の注文用。アプリショッピングは後日配送で、別のサービスです</li>
+          <li>モバイルオーダーも受取待ちの可能性あり。席や在庫の保証ではなく、受付枠が終了する場合もあります</li>
+          <li>FS＝ファンタジースプリングス。掲載する3店はモバイルオーダーが必要です</li>
+        </ul>
+        <p class="note">アプリ条件は2026年11月2日の公式案内を確認。11/4当日の変更・在庫・発券状況は公式アプリと現地で確かめてください。</p>
+      </section>
+      <section class="method">
         <h2>気をつけること</h2>
         <ul class="points">
           <li>販売場所・価格は11/2時点の案内。当日の在庫と販売方法はアプリと現地で確かめる</li>
@@ -423,6 +531,10 @@ const VIEWS = {
         <a href="https://faq.tokyodisneyresort.jp/answer/6ac49dd19d7b5045c5704a36/" target="_blank" rel="noopener">販売・購入制限の公式案内</a>
         <a href="https://faq.tokyodisneyresort.jp/answer/67ec03700b94433b5f215cfd/" target="_blank" rel="noopener">同行者分のアプリ注文について（公式）</a>
         <a href="https://www.tokyodisneyresort.jp/tdr/guide/app_service/standbypass/" target="_blank" rel="noopener">スタンバイパスの公式案内</a>
+        <a href="https://www.tokyodisneyresort.jp/tdr/guide/app_service/mobileorder.html" target="_blank" rel="noopener">モバイルオーダー対象店・使い方（公式）</a>
+        <a href="https://faq.tokyodisneyresort.jp/answer/68387bc220cc1360ee17f10d/" target="_blank" rel="noopener">FSの3店で必要な注文方法（公式）</a>
+        <a href="https://faq.tokyodisneyresort.jp/answer/67eaa65d7605a4cb7775c0d1/" target="_blank" rel="noopener">アプリを使わない店頭注文（公式）</a>
+        <a href="https://www.tokyodisneyresort.jp/tds/restaurant.html" target="_blank" rel="noopener">飲食店の販売方法・更新情報（公式）</a>
         <a href="https://www.tokyodisneyresort.jp/tds/map.html" target="_blank" rel="noopener">シー全体のマップ（公式）</a>
         <a href="https://www.tokyodisneyresort.jp/tds/daily/calendar/20261104" target="_blank" rel="noopener">11/4の運営カレンダー（公式）</a>
       </div>
@@ -449,7 +561,7 @@ function sync() {
     if (on) n += ITEMS[k].qty;
     document.querySelectorAll(`.card[data-key="${k}"]`).forEach(el => {
       el.classList.toggle("is-done", on);
-      el.hidden = onlyLeft && on;
+      el.hidden = (onlyLeft && on) || !matchesNeed(k, needFilter);
     });
     document.querySelectorAll(`.tick[data-key="${k}"]`).forEach(el => {
       el.setAttribute("aria-pressed", String(on));
@@ -457,9 +569,14 @@ function sync() {
     });
     document.querySelectorAll(`[data-chip="${k}"]`).forEach(el => el.classList.toggle("got", on));
   });
-  document.querySelectorAll(".group").forEach(g => { g.hidden = onlyLeft && ![...g.querySelectorAll(".card")].some(c => !c.hidden); });
+  document.querySelectorAll(".group").forEach(g => { g.hidden = ![...g.querySelectorAll(".card")].some(c => !c.hidden); });
   const allDone = document.getElementById("all-done-note");
   if (allDone) allDone.hidden = !(onlyLeft && n === TOTAL);
+  const visibleCount = Object.keys(ITEMS).filter(k => !(onlyLeft && done[k]) && matchesNeed(k, needFilter)).length;
+  const result = document.getElementById("filter-result");
+  if (result) result.textContent = `${visibleCount}種類を表示 / 全${Object.keys(ITEMS).length}種類（予定数は上の残り個数）`;
+  const noMatch = document.getElementById("no-match-note");
+  if (noMatch) noMatch.hidden = visibleCount !== 0 || (onlyLeft && n === TOTAL);
   const left = TOTAL - n;
   document.getElementById("remain-n").textContent = left === 0 ? "完了" : String(left);
   document.getElementById("remain-head").textContent = left === 0 ? "ぜんぶ" : "あと";
@@ -475,6 +592,12 @@ document.addEventListener("click", e => {
   if (f) {
     onlyLeft = f.dataset.filter === "left"; store.set("tds1104-onlyleft", onlyLeft);
     document.querySelectorAll("[data-filter]").forEach(b => b.setAttribute("aria-pressed", String(b === f)));
+    sync(); return;
+  }
+  const need = e.target.closest("[data-need]");
+  if (need) {
+    needFilter = need.dataset.need;
+    document.querySelectorAll("[data-need]").forEach(b => b.setAttribute("aria-pressed", String(b === need)));
     sync(); return;
   }
   const tab = e.target.closest("nav.tabs button");
