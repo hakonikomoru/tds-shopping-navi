@@ -121,7 +121,6 @@ h2 { font-size: 19px; }
 .qty { font-family: var(--font-display); font-weight: 700; font-size: 17px; color: var(--scarf); font-variant-numeric: tabular-nums; }
 .split { display: inline-block; font-size: 12px; font-weight: 700; border-radius: 6px; padding: 0 7px; line-height: 1.7; }
 .split.each { background: var(--scarf-soft); color: var(--scarf); }
-.split.decide { background: var(--harbor-soft); color: var(--harbor); }
 .variant .split { justify-self: center; font-size: 11px; padding: 0 5px; }
 .rule-box { background: var(--card); border: 2px solid var(--scarf); border-radius: 16px; padding: 12px 14px; display: grid; gap: 6px; }
 .rule-box h2 { font-size: 16px; color: var(--scarf); }
@@ -262,12 +261,12 @@ const SHOP_PLACES = [["mcduck", "商品ページ掲載店"], ["auntpeg", "シリ
 // 予定数は同じ商品をショップとアプリの両方に載せても共通（二重に数えない）
 const ITEMS = {
   charm:   { name: "雪だるま風ぬいぐるみチャーム", short: "チャーム", price: "各2,300円", qty: 5, img: "charm-duffy.jpg", url: "/iframe/goods/17872101062/",
-             variants: [["charm-duffy.jpg", "ダッフィー", 2, "each"], ["charm-shelliemay.jpg", "シェリーメイ", 1, "decide"], ["charm-linabell.jpg", "リーナ・ベル", 2, "each"]],
-             points: ["全7種のうち、この3種類だけ", "ダッフィーとリーナ・ベルは、二人がそれぞれ1個ずつ買う（同じ物は1人1個まで）", "シェリーメイはどちらが買うか先に決めておく", "アプリ通販でも注文できる"], places: SHOP_PLACES },
+             variants: [["charm-duffy.jpg", "ダッフィー", 2, "each"], ["charm-shelliemay.jpg", "シェリーメイ", 1], ["charm-linabell.jpg", "リーナ・ベル", 2, "each"]],
+             points: ["全7種のうち、この3種類だけ", "ダッフィーとリーナ・ベルは、二人がそれぞれ1個ずつ買う（同じ物は1人1個まで）", "アプリ通販でも注文できる"], places: SHOP_PLACES },
   figure:  { name: "雪だるま風フィギュア（単品）", short: "フィギュア", price: "1,500円", qty: 2, split: "each", img: "g-figure.jpg", url: "/goods/113002820/",
              points: ["二人がそれぞれ1個ずつ買う（同じ単品は1人1個まで）", "全7種からランダムで1つ。キャラクターは選べない", "アプリはBOX販売のみ。単品は店頭で買う"], places: SHOP_PLACES },
-  mug:     { name: "耐熱ガラスマグ", short: "ガラスマグ", price: "2,600円", qty: 1, split: "decide", img: "g-mug.jpg", url: "/goods/121003650/",
-             points: ["どちらが買うか先に決めておく", "ダッフィー＆フレンズのマグ。飲食メニューの注文はいらない", "アプリ通販でも注文できる"], places: SHOP_PLACES },
+  mug:     { name: "耐熱ガラスマグ", short: "ガラスマグ", price: "2,600円", qty: 1, img: "g-mug.jpg", url: "/goods/121003650/",
+             points: ["ダッフィー＆フレンズのマグ。飲食メニューの注文はいらない", "アプリ通販でも注文できる"], places: SHOP_PLACES },
   cap:     { name: "リーナ・ベル ファンキャップ", short: "ファンキャップ", price: "3,500円", qty: 2, split: "each", img: "g-cap.jpg", url: "/goods/133008019/",
              points: ["二人がそれぞれ1個ずつ買う（同じ物は1人1個まで）", "クリスマスのファンキャップ。当日かぶるなら店頭で買う", "アプリ通販でも注文できる"], places: SHOP_PLACES },
   badge:   { name: "リーナ・ベル ぬいぐるみバッジ", short: "ぬいぐるみバッジ", price: "3,500円", qty: 2, split: "each", tentative: true, img: "g-badge.jpg", url: "/goods/116002181",
@@ -294,7 +293,7 @@ const METHODS = [
   { id: "shop", label: "ショップ", title: "ショップで買う", how: "スタンバイパスで入店", items: ["charm", "figure", "mug", "cap"],
     steps: ["シーに入園したら、公式アプリで対象ショップのスタンバイパスを取る", "指定時間にショップへ入って、欲しい対象商品をすべて選んでから会計", "買う人それぞれが、当日入園したチケットを見せられるようにしておく（チケット認証あり）"],
     callout: "<b>同じ商品は1人1点まで。</b>違う商品ならそれぞれ1点ずつ選べる。2個欲しい物（ダッフィーとリーナ・ベルのチャーム、フィギュア、ファンキャップ）は二人が1個ずつ買う。<br><b>会計は対象3店を通じて1日1回だけ。</b>買った後に別の店や同じ店で買い足すことはできない。",
-    note: "対象店（11/2から当面）：マクダックス・デパートメントストア、アーント・ペグズ・ヴィレッジストア、ガッレリーア・ディズニー。どの店に何があるかはアプリで確かめる。スタンバイパスは商品の取り置きではない。シェリーメイのチャームとマグは、どちらが買うか先に決めておく。" },
+    note: "対象店（11/2から当面）：マクダックス・デパートメントストア、アーント・ペグズ・ヴィレッジストア、ガッレリーア・ディズニー。どの店に何があるかはアプリで確かめる。スタンバイパスは商品の取り置きではない。" },
   { id: "app", label: "アプリ", title: "公式アプリで注文", how: "入園後に注文・後日配送", items: ["badge"],
     steps: ["当日のチケットでシーに入園する", "東京ディズニーリゾート・アプリの「ショッピング」を開く", "在庫と販売条件を確かめて、当日23:45までに注文を終える", "後日、家に届く"],
     callout: "<b>同じ商品は1人1点まで。</b>2個欲しいときは、二人が各自のアカウントで1個ずつ注文する。チケットを共有していても、1人の注文に2人分はまとめられない。<br><b>入園前は注文できない。</b>23:45は注文できる時間の上限で、在庫の保証ではない。",
@@ -319,7 +318,7 @@ let onlyLeft = !!store.get("tds1104-onlyleft", false);
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const mtag = m => `<span class="mtag ${m.id}">${m.label}</span>`;
-const splitHTML = sp => sp === "each" ? '<span class="split each">二人で1個ずつ</span>' : sp === "decide" ? '<span class="split decide">どちらが買うか決める</span>' : "";
+const splitHTML = sp => sp === "each" ? '<span class="split each">二人で1個ずつ</span>' : "";
 const CHECK_SVG ='<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 
 function placeHTML(key, extra, chips) {
