@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#d4f0f6">
+<meta name="theme-color" content="#174c39">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>11/4 シー買い物ナビ</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -15,21 +15,21 @@
 /* スマホ片手用：画面下のタブで「リスト／場所／買い方／注意」を切り替える。1画面1つの役割 */
 /* 屋外の日差しでも読みやすいよう、端末のダークモードに関係なく常に明るい配色 */
 :root {
-  --bg: #eef8fb;
-  --card: #ffffff;
-  --fg: #1d2c38;
-  --muted: #5d6f7c;
-  --line: #cfe4ec;
-  --harbor: #0f8a9c;
-  --harbor-soft: #d9f1f5;
-  --scarf: #e04a4a;
-  --scarf-soft: #fff0ee;
-  --done: #2e9a5c;
-  --done-soft: #e6f7ec;
-  --m-shop: #0f8a9c;
-  --m-app: #7a5bd1;
-  --m-food: #d9771f;
-  --m-wagon: #d24f8a;
+  --bg: #f8f5ec;
+  --card: #fffefb;
+  --fg: #273d33;
+  --muted: #616e62;
+  --line: #e3dece;
+  --harbor: #226247;
+  --harbor-soft: #e8f0e7;
+  --scarf: #ad3542;
+  --scarf-soft: #fceeed;
+  --done: #287448;
+  --done-soft: #edf5e9;
+  --m-shop: #28644b;
+  --m-app: #76509e;
+  --m-food: #9b5517;
+  --m-wagon: #a33b62;
   --font-display: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Sans", sans-serif;
   --font-body: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
   --tabbar: 64px;
@@ -225,6 +225,59 @@ footer { font-size: 12px; color: var(--muted); margin-top: 8px; }
 }
 
 @media (prefers-reduced-motion: reduce) { .bar i, details.more > summary::after { transition: none; } }
+
+/* クリスマスの装飾。静止したCSS/SVGのみで、買い物操作を遮らない。 */
+body {
+  background-color: var(--bg);
+  background-image: radial-gradient(circle at 12px 12px, #b99b5b22 1px, transparent 1.5px), radial-gradient(circle at 38px 38px, #65836d16 1px, transparent 1.5px);
+  background-size: 52px 52px;
+}
+body::before { background: #174c39; }
+header.top {
+  color: #fff9e9;
+  background: radial-gradient(ellipse at top left, #2b634a, transparent 70%), #174c39;
+  border-bottom: 1px solid #bc9b59;
+  box-shadow: 0 4px 18px #173c2920;
+}
+header.top::after {
+  content: ""; position: absolute; bottom: -4px; left: 0; right: 0; height: 4px; pointer-events: none;
+  background: repeating-linear-gradient(-45deg, #b84c55 0 8px, #f5e9cd 8px 16px, #41745c 16px 24px, #f5e9cd 24px 32px);
+}
+header.top .wrap { padding-block: 12px 11px; gap: 9px; }
+header.top .eyebrow { color: #e1e8d7; font-size: 11px; letter-spacing: .025em; }
+.title-line { display: flex; align-items: center; gap: 8px; margin-top: 3px; }
+.title-line h1 { color: #fff9e9; }
+.wreath { width: 34px; height: 34px; flex: none; }
+.remain b, .remain .unit { color: #ffdda2; }
+.remain small { color: #e1e8d7; }
+.remain.all-done b { color: #d6eec1; }
+.bar { background: #416b55; height: 5px; }
+.bar i { background: #e9c77e; }
+.prep { position: relative; border-color: #d9c797; background: #fffdf5; box-shadow: 0 3px 12px #876d2b08; }
+.prep h2 { color: #23573f; padding-right: 34px; }
+.holly { position: absolute; width: 36px; height: 32px; top: 12px; right: 10px; pointer-events: none; }
+.rule-box { border: 1px solid #d8a8a6; border-left: 4px solid var(--scarf); background: #fffaf5; }
+.card, .method { box-shadow: 0 3px 12px #413b2406; }
+.card { border-color: #dfd9c7; }
+.card.is-done { border-color: #bcd4b3; }
+.group-head h2 { color: #28553f; }
+.group-head .mtag { box-shadow: 0 1px 0 #00000012; }
+.area h2 { border-bottom-color: #d7c495; color: #28553f; }
+.area h2::before { content: ""; display: inline-block; width: 12px; height: 12px; margin-right: 8px; background: #937131; clip-path: polygon(50% 0, 63% 37%, 100% 50%, 63% 63%, 50% 100%, 37% 63%, 0 50%, 37% 37%); }
+.filter button[aria-pressed="true"] { background: #28553f; border-color: #28553f; }
+.need-buttons button[aria-pressed="true"] { color: #20583e; border-color: #709778; background: #e8f0e7; }
+nav.tabs { background: #fffdf6; border-top-color: #d1bf92; box-shadow: 0 -3px 14px #463f2410; }
+nav.tabs button[aria-selected="true"] { color: #246044; background: linear-gradient(#edf3e9, #fffdf600); box-shadow: inset 0 3px #b94750; }
+nav.tabs button[aria-selected="true"] svg { stroke: #246044; }
+footer { border-top: 1px solid #d9c797; padding-top: 12px; }
+.holiday-footer { display: flex; justify-content: center; align-items: center; gap: 12px; padding-top: 12px; color: #8d6e31; font-size: 11px; letter-spacing: .12em; }
+.holiday-footer::before, .holiday-footer::after { content: ""; width: 30px; height: 1px; background: #c3ad7a; }
+@media (max-width: 360px) {
+  .wreath { width: 28px; height: 28px; }
+  .title-line { gap: 6px; }
+  .title-line h1 { font-size: 18px; }
+  header.top .eyebrow { font-size: 10px; }
+}
 </style>
 </head>
 <body>
@@ -234,7 +287,14 @@ footer { font-size: 12px; color: var(--muted); margin-top: 8px; }
     <div class="head-row">
       <div class="title-block">
         <div class="eyebrow">11月4日（水）東京ディズニーシー</div>
-        <h1>シー買い物ナビ</h1>
+        <div class="title-line"><svg class="wreath" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+            <circle cx="24" cy="25" r="16" fill="none" stroke="#8caf73" stroke-width="7" stroke-dasharray="4 2"/>
+            <circle cx="24" cy="25" r="13" fill="none" stroke="#c6d7a0" stroke-width="1.5"/>
+            <g fill="#f0cf7f"><circle cx="11" cy="18" r="2"/><circle cx="35" cy="18" r="2"/><circle cx="15" cy="36" r="2"/><circle cx="36" cy="31" r="2"/></g>
+            <g fill="#e57b76"><circle cx="8" cy="28" r="2.5"/><circle cx="31" cy="39" r="2.5"/></g>
+            <path d="M24 9C14-1 9 10 17 14l7-3 7 3c8-4 3-15-7-5Z" fill="#cc5b64"/>
+            <path d="m22 11-4 10 6-3 5 3-3-10" fill="#cf666c"/><circle cx="24" cy="10" r="3" fill="#f3bd9b"/>
+          </svg><h1>シー買い物ナビ</h1></div>
       </div>
       <div class="remain" id="remain" aria-live="polite"><small id="remain-head">あと</small><b id="remain-n">18</b><span class="unit" id="remain-unit">個</span><small id="remain-label">全18個中</small></div>
     </div>
@@ -452,6 +512,13 @@ function cardHTML(key) {
 const VIEWS = {
   list() {
     return `<section class="prep" aria-label="並ぶものとアプリの準備">
+        <svg class="holly" viewBox="0 0 48 40" aria-hidden="true" focusable="false">
+          <path d="M23 28C8 27 7 16 2 12l10-1 1-9 8 6 7-3c-3 8 9 14-5 23Z" fill="#527b53"/>
+          <path d="M25 27c2-13 11-13 14-20l2 9 7 1-5 6 2 8c-7-4-10 5-20-4Z" fill="#7d9562"/>
+          <path d="M23 28 15 12m10 15 14-8" fill="none" stroke="#e5e8ca" stroke-width="1.2"/>
+          <g fill="#b83e49"><circle cx="20" cy="29" r="4.5"/><circle cx="28" cy="28" r="4.5"/><circle cx="25" cy="35" r="4.5"/></g>
+          <g fill="#edb4a2"><circle cx="19" cy="27.5" r="1.1"/><circle cx="27" cy="26.5" r="1.1"/></g>
+        </svg>
         <h2>先に見る：列とアプリ</h2>
         <p><b>ショップ・バケットは列に注意。</b>ショップはまず入店パス、バッジはアプリで配送注文。</p>
         <p class="note">紫＝アプリ必要／店舗による、青緑＝任意、灰＝不要。列の表示は目安で、今の待ち時間ではありません。</p>
@@ -538,7 +605,7 @@ const VIEWS = {
         <a href="https://www.tokyodisneyresort.jp/tds/map.html" target="_blank" rel="noopener">シー全体のマップ（公式）</a>
         <a href="https://www.tokyodisneyresort.jp/tds/daily/calendar/20261104" target="_blank" rel="noopener">11/4の運営カレンダー（公式）</a>
       </div>
-      <footer>販売場所・価格・画像は東京ディズニーリゾート公式サイト（2026年11月2日確認）より。</footer>`;
+      <footer>販売場所・価格・画像は東京ディズニーリゾート公式サイト（2026年11月2日確認）より。<span class="holiday-footer" aria-hidden="true">CHRISTMAS SHOPPING</span></footer>`;
   },
 };
 
