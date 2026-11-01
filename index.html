@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#174c39">
+<meta name="theme-color" content="#dbf0f8">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>11/4 シー買い物ナビ</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -15,17 +15,18 @@
 /* スマホ片手用：画面下のタブで「リスト／場所／買い方／注意」を切り替える。1画面1つの役割 */
 /* 屋外の日差しでも読みやすいよう、端末のダークモードに関係なく常に明るい配色 */
 :root {
-  --bg: #f8f5ec;
-  --card: #fffefb;
-  --fg: #273d33;
-  --muted: #616e62;
-  --line: #e3dece;
-  --harbor: #226247;
-  --harbor-soft: #e8f0e7;
-  --scarf: #ad3542;
-  --scarf-soft: #fceeed;
-  --done: #287448;
-  --done-soft: #edf5e9;
+  --bg: #f1f9fc;
+  --card: #ffffff;
+  --fg: #244d64;
+  --muted: #526e80;
+  --line: #d1e5ee;
+  --harbor: #35799a;
+  --harbor-soft: #e9f5fb;
+  --scarf: #326c8d;
+  --scarf-soft: #edf7fc;
+  --done: #35799a;
+  --done-soft: #edf7fc;
+  --snow-scarf: #8bbbd3;
   --m-shop: #28644b;
   --m-app: #76509e;
   --m-food: #9b5517;
@@ -226,65 +227,78 @@ footer { font-size: 12px; color: var(--muted); margin-top: 8px; }
 
 @media (prefers-reduced-motion: reduce) { .bar i, details.more > summary::after { transition: none; } }
 
-/* クリスマスの装飾。静止したCSS/SVGのみで、買い物操作を遮らない。 */
+/* ふんわりスノー：採用された見本の水色と雪だるま。静止CSS/SVGで装飾。 */
 body {
   background-color: var(--bg);
-  background-image: radial-gradient(circle at 12px 12px, #b99b5b22 1px, transparent 1.5px), radial-gradient(circle at 38px 38px, #65836d16 1px, transparent 1.5px);
-  background-size: 52px 52px;
+  background-image: radial-gradient(circle at 20px 24px, #b0d5e644 1px, transparent 1.5px);
+  background-size: 42px 42px;
 }
-body::before { background: #174c39; }
-header.top {
-  color: #fff9e9;
-  background: radial-gradient(ellipse at top left, #2b634a, transparent 70%), #174c39;
-  border-bottom: 1px solid #bc9b59;
-  box-shadow: 0 4px 18px #173c2920;
-}
+body::before { background: #dbf0f8; }
+header.top { background: #dbf0f8; border-bottom: 1px solid #c5e2ef; box-shadow: 0 3px 14px #28597708; }
 header.top::after {
-  content: ""; position: absolute; bottom: -4px; left: 0; right: 0; height: 4px; pointer-events: none;
-  background: repeating-linear-gradient(-45deg, #b84c55 0 8px, #f5e9cd 8px 16px, #41745c 16px 24px, #f5e9cd 24px 32px);
+  content: ""; position: absolute; bottom: -1px; left: 0; right: 0; height: 9px; pointer-events: none;
+  background: radial-gradient(ellipse at 30% 100%, #f1f9fc 45%, transparent 48%) 0 0 / 60px 15px repeat-x;
 }
-header.top .wrap { padding-block: 12px 11px; gap: 9px; }
-header.top .eyebrow { color: #e1e8d7; font-size: 11px; letter-spacing: .025em; }
+header.top .wrap { position: relative; padding-block: 12px 16px; gap: 9px; }
+header.top .eyebrow { color: #486e84; font-size: 11px; letter-spacing: .025em; }
+.head-row, .bar { position: relative; z-index: 1; }
 .title-line { display: flex; align-items: center; gap: 8px; margin-top: 3px; }
-.title-line h1 { color: #fff9e9; }
-.wreath { width: 34px; height: 34px; flex: none; }
-.remain b, .remain .unit { color: #ffdda2; }
-.remain small { color: #e1e8d7; }
-.remain.all-done b { color: #d6eec1; }
-.bar { background: #416b55; height: 5px; }
-.bar i { background: #e9c77e; }
-.prep { position: relative; border-color: #d9c797; background: #fffdf5; box-shadow: 0 3px 12px #876d2b08; }
-.prep h2 { color: #23573f; padding-right: 34px; }
-.holly { position: absolute; width: 36px; height: 32px; top: 12px; right: 10px; pointer-events: none; }
-.rule-box { border: 1px solid #d8a8a6; border-left: 4px solid var(--scarf); background: #fffaf5; }
-.card, .method { box-shadow: 0 3px 12px #413b2406; }
-.card { border-color: #dfd9c7; }
-.card.is-done { border-color: #bcd4b3; }
-.group-head h2 { color: #28553f; }
+.title-line h1 { color: var(--fg); }
+.snow-flakes { position: absolute; inset: 0; color: #76b3d0; opacity: .5; pointer-events: none; overflow: hidden; }
+.snow-flakes svg { position: absolute; width: 15px; height: 15px; }
+.snow-flakes svg:nth-child(1) { top: 8px; left: 56%; }
+.snow-flakes svg:nth-child(2) { bottom: 26px; right: 25%; width: 11px; height: 11px; }
+.snowflake { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.snowman { position: relative; width: 62px; height: 88px; flex: none; }
+.snowman-body { position: absolute; width: 53px; height: 45px; left: 5px; bottom: 3px; border: 1px solid #c1dce9; border-radius: 48% 48% 45% 45%; background: linear-gradient(120deg, #fff 40%, #e9f5fa); box-shadow: 0 3px 0 #77a8c11a; }
+.snowman-body::before { content: ""; position: absolute; width: 3px; height: 3px; top: 18px; left: 25px; border-radius: 50%; background: #617b8a; box-shadow: 0 9px #617b8a; }
+.snowman-head { position: absolute; top: 19px; left: 11px; width: 40px; height: 35px; border-radius: 48%; background: linear-gradient(120deg, #fff 50%, #eaf5fa); border: 1px solid #c1dce9; }
+.snowman-head::before { content: ""; position: absolute; left: 10px; top: 13px; width: 3px; height: 3px; border-radius: 50%; background: #33516a; box-shadow: 14px 0 #33516a; }
+.snowman-head::after { content: ""; position: absolute; left: 16px; top: 20px; width: 6px; height: 4px; border-bottom: 1.5px solid #56758b; border-radius: 50%; }
+.snowman-nose { position: absolute; top: 35px; left: 30px; width: 8px; height: 4px; background: #e8ad83; border-radius: 50% 100% 100% 50%; transform: rotate(-12deg); }
+.snowman-cheeks { position: absolute; top: 37px; left: 17px; width: 6px; height: 3px; border-radius: 50%; background: #ecc4c8; box-shadow: 21px 0 #ecc4c8; opacity: .8; }
+.snowman-hat { position: absolute; width: 35px; height: 18px; left: 14px; top: 7px; background: var(--snow-scarf); border-radius: 18px 18px 3px 3px; transform: rotate(-8deg); }
+.snowman-hat::before { content: ""; position: absolute; width: 41px; height: 7px; left: -3px; bottom: -2px; border-radius: 5px; background: #a9d0e3; }
+.snowman-hat::after { content: ""; position: absolute; width: 11px; height: 10px; top: -7px; left: 13px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px #d4e8f1; }
+.snowman-scarf { position: absolute; width: 42px; height: 9px; top: 49px; left: 10px; border-radius: 6px; background: var(--snow-scarf); }
+.snowman-scarf::after { content: ""; position: absolute; width: 10px; height: 20px; top: 4px; left: 25px; border-radius: 0 0 3px 3px; background: repeating-linear-gradient(0deg, var(--snow-scarf) 0 5px, #c0dcea 5px 7px); transform: rotate(-8deg); }
+.snowman-mini { width: 31px; height: 44px; flex: none; pointer-events: none; }
+.snowman-mini > .snowman { transform: scale(.5); transform-origin: top left; }
+.remain b, .remain.all-done b { color: #2e7598; }
+.remain .unit { color: #326c8d; }
+.remain small { color: #486e84; }
+.bar { background: #c1dfea; height: 5px; }
+.bar i { background: #3c80a0; }
+.prep { position: relative; border-color: var(--line); background: #fff; box-shadow: 0 3px 12px #6a98b008; }
+.prep h2 { color: var(--fg); padding-right: 30px; }
+.note-flake { position: absolute; width: 22px; height: 22px; top: 12px; right: 12px; color: #87b9d0; pointer-events: none; }
+.rule-box { border: 1px solid #d4e3ed; border-left: 3px solid #8cb5cc; background: #fff; }
+.card, .method { box-shadow: 0 4px 10px #6a98b00b; }
+.card { border-color: #cddfe9; border-radius: 18px; }
+.card.is-done { border-color: #b9d8e8; }
+.group-head h2, .area h2 { color: #3c6980; }
 .group-head .mtag { box-shadow: 0 1px 0 #00000012; }
-.area h2 { border-bottom-color: #d7c495; color: #28553f; }
-.area h2::before { content: ""; display: inline-block; width: 12px; height: 12px; margin-right: 8px; background: #937131; clip-path: polygon(50% 0, 63% 37%, 100% 50%, 63% 63%, 50% 100%, 37% 63%, 0 50%, 37% 37%); }
-.filter button[aria-pressed="true"] { background: #28553f; border-color: #28553f; }
-.need-buttons button[aria-pressed="true"] { color: #20583e; border-color: #709778; background: #e8f0e7; }
-nav.tabs { background: #fffdf6; border-top-color: #d1bf92; box-shadow: 0 -3px 14px #463f2410; }
-nav.tabs button[aria-selected="true"] { color: #246044; background: linear-gradient(#edf3e9, #fffdf600); box-shadow: inset 0 3px #b94750; }
-nav.tabs button[aria-selected="true"] svg { stroke: #246044; }
-footer { border-top: 1px solid #d9c797; padding-top: 12px; }
-.holiday-footer { display: flex; justify-content: center; align-items: center; gap: 12px; padding-top: 12px; color: #8d6e31; font-size: 11px; letter-spacing: .12em; }
-.holiday-footer::before, .holiday-footer::after { content: ""; width: 30px; height: 1px; background: #c3ad7a; }
+.area h2 { border-bottom-color: #c8e2ef; }
+.area h2::before { content: ""; display: inline-block; width: 12px; height: 12px; margin-right: 8px; background: #87b9d0; clip-path: polygon(50% 0, 63% 37%, 100% 50%, 63% 63%, 50% 100%, 37% 63%, 0 50%, 37% 37%); }
+.filter button[aria-pressed="true"] { background: var(--harbor); border-color: var(--harbor); }
+.need-buttons button[aria-pressed="true"] { color: #326480; border-color: #83b3cd; background: #e9f5fb; }
+nav.tabs { background: #fff; border-top-color: #c7e0ec; box-shadow: 0 -3px 14px #2859770b; }
+nav.tabs button[aria-selected="true"] { color: #326c8d; background: #e9f5fb; box-shadow: inset 0 3px #83bbd7; }
+footer { border-top: 1px solid var(--line); padding-top: 12px; }
+.holiday-footer { display: flex; justify-content: center; align-items: center; gap: 12px; padding-top: 12px; color: #526e80; font-size: 11px; letter-spacing: .12em; }
+.holiday-footer::before, .holiday-footer::after { content: ""; width: 30px; height: 1px; background: #bddae9; }
 @media (max-width: 360px) {
-  .wreath { width: 28px; height: 28px; }
   .title-line { gap: 6px; }
   .title-line h1 { font-size: 18px; }
   header.top .eyebrow { font-size: 10px; }
 }
 
 /* 店頭と配送を選べる品は、詳細を開く前に購入経路を表示 */
-.card-purchase { margin: 0 12px 12px; padding: 10px 12px; border: 1px solid #c7d3b9; border-radius: 10px; background: #f2f6eb; }
-.purchase-tag { display: inline-block; color: #27583c; font-size: 13px; line-height: 1.6; }
-.card-purchase p { margin: 4px 0 0; color: #52634f; font-size: 13px; line-height: 1.65; }
-.also-purchase { padding: 10px 12px; border-radius: 10px; background: #f2f6eb; border: 1px solid #c7d3b9; font-size: 14px; }
-.also-purchase strong { color: #27583c; }
+.card-purchase { margin: 0 12px 12px; padding: 10px 12px; border: 1px solid #c8e2ef; border-radius: 10px; background: #edf7fc; }
+.purchase-tag { display: inline-block; color: #326480; font-size: 13px; line-height: 1.6; }
+.card-purchase p { margin: 4px 0 0; color: #41647a; font-size: 13px; line-height: 1.65; }
+.also-purchase { padding: 10px 12px; border-radius: 10px; background: #edf7fc; border: 1px solid #c8e2ef; font-size: 14px; }
+.also-purchase strong { color: #326480; }
 .also-purchase p { margin: 4px 0 0; }
 </style>
 </head>
@@ -292,17 +306,11 @@ footer { border-top: 1px solid #d9c797; padding-top: 12px; }
 
 <header class="top">
   <div class="wrap">
+    <div class="snow-flakes" aria-hidden="true"><svg class="snowflake" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2v20M3.34 7l17.32 10M3.34 17 20.66 7M9 4l3 3 3-3M9 20l3-3 3 3M3.6 10.6l4.1-1.1-1.1-4.1M17.4 18.6l-1.1-4.1 4.1-1.1M6.6 18.6l1.1-4.1-4.1-1.1M20.4 10.6l-4.1-1.1 1.1-4.1"/></svg><svg class="snowflake" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2v20M3.34 7l17.32 10M3.34 17 20.66 7M9 4l3 3 3-3M9 20l3-3 3 3M3.6 10.6l4.1-1.1-1.1-4.1M17.4 18.6l-1.1-4.1 4.1-1.1M6.6 18.6l1.1-4.1-4.1-1.1M20.4 10.6l-4.1-1.1 1.1-4.1"/></svg></div>
     <div class="head-row">
       <div class="title-block">
         <div class="eyebrow">11月4日（水）東京ディズニーシー</div>
-        <div class="title-line"><svg class="wreath" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
-            <circle cx="24" cy="25" r="16" fill="none" stroke="#8caf73" stroke-width="7" stroke-dasharray="4 2"/>
-            <circle cx="24" cy="25" r="13" fill="none" stroke="#c6d7a0" stroke-width="1.5"/>
-            <g fill="#f0cf7f"><circle cx="11" cy="18" r="2"/><circle cx="35" cy="18" r="2"/><circle cx="15" cy="36" r="2"/><circle cx="36" cy="31" r="2"/></g>
-            <g fill="#e57b76"><circle cx="8" cy="28" r="2.5"/><circle cx="31" cy="39" r="2.5"/></g>
-            <path d="M24 9C14-1 9 10 17 14l7-3 7 3c8-4 3-15-7-5Z" fill="#cc5b64"/>
-            <path d="m22 11-4 10 6-3 5 3-3-10" fill="#cf666c"/><circle cx="24" cy="10" r="3" fill="#f3bd9b"/>
-          </svg><h1>シー買い物ナビ</h1></div>
+        <div class="title-line"><div class="snowman-mini" aria-hidden="true"><div class="snowman"><span class="snowman-body"></span><span class="snowman-head"></span><span class="snowman-nose"></span><span class="snowman-cheeks"></span><span class="snowman-hat"></span><span class="snowman-scarf"></span></div></div><h1>シー買い物ナビ</h1></div>
       </div>
       <div class="remain" id="remain" aria-live="polite"><small id="remain-head">あと</small><b id="remain-n">18</b><span class="unit" id="remain-unit">個</span><small id="remain-label">全18個中</small></div>
     </div>
@@ -526,13 +534,7 @@ function cardHTML(key) {
 const VIEWS = {
   list() {
     return `<section class="prep" aria-label="並ぶものとアプリの準備">
-        <svg class="holly" viewBox="0 0 48 40" aria-hidden="true" focusable="false">
-          <path d="M23 28C8 27 7 16 2 12l10-1 1-9 8 6 7-3c-3 8 9 14-5 23Z" fill="#527b53"/>
-          <path d="M25 27c2-13 11-13 14-20l2 9 7 1-5 6 2 8c-7-4-10 5-20-4Z" fill="#7d9562"/>
-          <path d="M23 28 15 12m10 15 14-8" fill="none" stroke="#e5e8ca" stroke-width="1.2"/>
-          <g fill="#b83e49"><circle cx="20" cy="29" r="4.5"/><circle cx="28" cy="28" r="4.5"/><circle cx="25" cy="35" r="4.5"/></g>
-          <g fill="#edb4a2"><circle cx="19" cy="27.5" r="1.1"/><circle cx="27" cy="26.5" r="1.1"/></g>
-        </svg>
+        <svg class="snowflake note-flake" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2v20M3.34 7l17.32 10M3.34 17 20.66 7M9 4l3 3 3-3M9 20l3-3 3 3M3.6 10.6l4.1-1.1-1.1-4.1M17.4 18.6l-1.1-4.1 4.1-1.1M6.6 18.6l1.1-4.1-4.1-1.1M20.4 10.6l-4.1-1.1 1.1-4.1"/></svg>
         <h2>先に見る：列とアプリ</h2>
         <p><b>ショップ・バケットは列に注意。</b>ショップはまず入店パス、バッジはアプリで配送注文。</p>
         <p class="note">紫＝アプリ必要／店舗による、青緑＝任意、灰＝不要。列の表示は目安で、今の待ち時間ではありません。</p>
@@ -620,7 +622,7 @@ const VIEWS = {
         <a href="https://www.tokyodisneyresort.jp/tds/map.html" target="_blank" rel="noopener">シー全体のマップ（公式）</a>
         <a href="https://www.tokyodisneyresort.jp/tds/daily/calendar/20261104" target="_blank" rel="noopener">11/4の運営カレンダー（公式）</a>
       </div>
-      <footer>販売場所・価格・画像は東京ディズニーリゾート公式サイト（2026年11月2日確認）より。<span class="holiday-footer" aria-hidden="true">CHRISTMAS SHOPPING</span></footer>`;
+      <footer>販売場所・価格・画像は東京ディズニーリゾート公式サイト（2026年11月2日確認）より。<span class="holiday-footer" aria-hidden="true">WINTER SHOPPING</span></footer>`;
   },
 };
 
