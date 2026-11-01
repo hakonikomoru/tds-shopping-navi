@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>11/4 シー買い物ナビ</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap">
+<style>
+/* 片手で見る縦長1カラム：上に進み具合、横スクロールの目次、買い方ごとの章、最後に場所から逆引き */
+/* 屋外の日差しでも読みやすいよう、端末のダークモードに関係なく常に明るい配色 */
+:root {
+  --bg: #eef8fb;
+  --card: #ffffff;
+  --fg: #1d2c38;
+  --muted: #5d6f7c;
+  --line: #cfe4ec;
+  --harbor: #0f8a9c;
+  --harbor-soft: #d9f1f5;
+  --scarf: #e04a4a;
+  --scarf-soft: #fff0ee;
+  --done: #2e9a5c;
+  --done-soft: #e6f7ec;
+  --font-display: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Sans", sans-serif;
+  --font-body: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.7;
+  -webkit-text-size-adjust: 100%;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.wrap {
+  max-width: 640px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+a { color: var(--harbor); }
+a:focus-visible, summary:focus-visible, label:focus-within { outline: 2px solid var(--harbor); outline-offset: 2px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.35; margin: 0; }
+
+/* header */
+header.top { padding-block: 22px 14px; display: grid; gap: 10px; }
+.top-band { background: linear-gradient(180deg, #d4f0f6 0%, var(--bg) 100%); }
+.eyebrow { font-size: 12px; letter-spacing: .08em; color: var(--muted); }
+h1 { font-size: 26px; }
+.facts { display: flex; flex-wrap: wrap; gap: 6px; font-size: 13px; }
+.facts span { background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; }
+.progress { display: grid; gap: 6px; }
+.progress-row { display: flex; justify-content: space-between; align-items: baseline; font-size: 14px; }
+.progress-row strong { font-family: var(--font-display); font-size: 20px; font-variant-numeric: tabular-nums; }
+.bar { height: 8px; border-radius: 999px; background: var(--line); overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: var(--done); transition: width .3s; }
+
+/* sticky nav */
+nav.jump { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
+nav.jump .wrap { display: flex; gap: 6px; overflow-x: auto; padding-block: 8px; scrollbar-width: none; }
+nav.jump a {
+  flex: none; text-decoration: none; color: var(--fg); font-size: 13px; font-weight: 700;
+  background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px;
+}
+
+main { display: grid; gap: 34px; padding-block: 20px 48px; }
+/* 縦積みのグリッドは列を画面幅に収める（地図画像の800px幅で列が広がらないように） */
+main, section.method, .item, .places, .place-body, .area, .method-head { grid-template-columns: minmax(0, 1fr); }
+section.method { display: grid; gap: 14px; scroll-margin-top: 60px; }
+.method-head { display: grid; gap: 6px; }
+.method-head .tag { font-size: 12px; font-weight: 700; color: var(--harbor); letter-spacing: .06em; }
+h2 { font-size: 21px; }
+.steps { margin: 0; padding-left: 1.4em; display: grid; gap: 2px; }
+.note { font-size: 13px; color: var(--muted); }
+.callout { background: var(--scarf-soft); border-radius: 10px; padding: 10px 12px; font-size: 13.5px; }
+.callout b { color: var(--scarf); }
+
+/* item cards */
+.item { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: grid; gap: 12px; }
+.item.is-done { border-color: var(--done); background: linear-gradient(var(--done-soft), var(--done-soft)) padding-box; }
+.item-top { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 12px; align-items: start; }
+.thumb { width: 92px; aspect-ratio: 1; border-radius: 10px; object-fit: cover; background: var(--harbor-soft); max-width: 100%; }
+.item h3 { font-size: 16.5px; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 4px; font-size: 13px; }
+.price { font-variant-numeric: tabular-nums; color: var(--muted); }
+.qty { font-weight: 700; color: #fff; background: var(--scarf); border-radius: 6px; padding: 0 8px; font-variant-numeric: tabular-nums; }
+.tentative { font-size: 12px; color: var(--scarf); border: 1px solid var(--scarf); border-radius: 6px; padding: 0 6px; }
+.variants { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.variant { text-align: center; font-size: 12.5px; display: grid; gap: 4px; }
+.variant img { width: 100%; aspect-ratio: 1; border-radius: 10px; object-fit: cover; }
+.variant b { font-variant-numeric: tabular-nums; }
+.item ul.points { margin: 0; padding-left: 1.2em; font-size: 13.5px; display: grid; gap: 2px; }
+.check {
+  display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 14px;
+  border: 1px dashed var(--line); border-radius: 10px; padding: 8px 12px; cursor: pointer; user-select: none;
+}
+.check input { width: 22px; height: 22px; accent-color: var(--done); margin: 0; }
+.item.is-done .check { border-style: solid; border-color: var(--done); color: var(--done); }
+
+/* places */
+.places { display: grid; gap: 6px; }
+.places-label { font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: .06em; }
+details.place { border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+details.place > summary {
+  list-style: none; cursor: pointer; padding: 9px 12px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; align-items: center;
+}
+details.place > summary::-webkit-details-marker { display: none; }
+.pname { font-weight: 700; font-size: 14px; }
+.parea { font-size: 12px; color: var(--muted); }
+.pextra { grid-column: 1 / -1; font-size: 12.5px; color: var(--harbor); }
+.pin { font-size: 12px; color: var(--harbor); font-weight: 700; white-space: nowrap; }
+details.place[open] .pin::after { content: "を閉じる"; }
+details.place:not([open]) .pin::after { content: "を見る"; }
+.place-body { padding: 0 12px 12px; display: grid; gap: 8px; }
+.place-body img { width: 100%; aspect-ratio: 16 / 9; border-radius: 8px; object-fit: cover; background: var(--harbor-soft); }
+.place-body a { font-size: 13px; }
+
+/* area index */
+.area { display: grid; gap: 8px; }
+.area h3 { font-size: 16px; padding-bottom: 4px; border-bottom: 2px solid var(--harbor); }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+.chip { font-size: 11.5px; background: var(--harbor-soft); color: var(--fg); border-radius: 6px; padding: 0 7px; }
+.chip.got { background: var(--done-soft); color: var(--done); text-decoration: line-through; }
+
+.links { display: grid; gap: 6px; font-size: 14px; }
+footer { font-size: 12px; color: var(--muted); padding-block: 0 40px; }
+@media (prefers-reduced-motion: reduce) { .bar i { transition: none; } html { scroll-behavior: auto; } }
+html { scroll-behavior: smooth; }
+</style>
+</head>
+<body>
+
+<div class="top-band"><header class="wrap top">
+  <div class="eyebrow">東京ディズニーシー ／ 11月4日（水）9:00–21:00</div>
+  <h1>シー買い物ナビ</h1>
+  <div class="facts">
+    <span>店頭はスタンバイパス</span><span>アプリ注文は当日23:45まで</span><span>公式情報 11/2 確認</span>
+  </div>
+  <div class="progress" aria-live="polite">
+    <div class="progress-row"><span>買えたもの</span><strong id="count">0 / 18</strong></div>
+    <div class="bar"><i id="bar"></i></div>
+    <div class="note">チェックはこの端末だけに保存されます。バッジ2個は仮の数です。</div>
+  </div>
+</header></div>
+
+<nav class="jump" aria-label="目次">
+  <div class="wrap">
+    <a href="#shop">① ショップ</a>
+    <a href="#app">② アプリ</a>
+    <a href="#food">③ 飲食店</a>
+    <a href="#wagon">④ ワゴン</a>
+    <a href="#where">場所から探す</a>
+    <a href="#rules">注意・公式</a>
+  </div>
+</nav>
+
+<main class="wrap" id="main"></main>
+
+<footer class="wrap">
+  販売場所・価格・画像は東京ディズニーリゾート公式サイト（2026年11月2日確認）より。当日の在庫と販売方法は公式アプリと現地の案内で確かめてください。
+</footer>
+
+<script>
+const LOC = {
+  mcduck:    { name: "マクダックス・デパートメントストア", area: "アメリカンウォーターフロント", url: "/tds/shop/detail/621/", img: "map-mcduck.jpg" },
+  auntpeg:   { name: "アーント・ペグズ・ヴィレッジストア", area: "アメリカンウォーターフロント", url: "/tds/shop/detail/629/", img: "map-auntpeg.jpg" },
+  galleria:  { name: "ガッレリーア・ディズニー", area: "メディテレーニアンハーバー", url: "/tds/shop/detail/611/", img: "map-galleria.jpg" },
+  zambini:   { name: "ザンビーニ・ブラザーズ・リストランテ", area: "メディテレーニアンハーバー", url: "/tds/restaurant/detail/403/", img: "map-zambini.jpg" },
+  portofino: { name: "カフェ・ポルトフィーノ", area: "メディテレーニアンハーバー", url: "/tds/restaurant/detail/400/", img: "map-portofino.jpg" },
+  biscotti:  { name: "マンマ・ビスコッティーズ・ベーカリー", area: "メディテレーニアンハーバー", url: "/tds/restaurant/detail/401/", img: "map-biscotti.jpg" },
+  refrescos: { name: "リフレスコス", area: "メディテレーニアンハーバー", url: "/tds/restaurant/detail/416/", img: "map-refrescos.jpg" },
+  nydeli:    { name: "ニューヨーク・デリ", area: "アメリカンウォーターフロント", url: "/tds/restaurant/detail/422/", img: "map-nydeli.jpg" },
+  hudson:    { name: "ハドソンリバー・ハーベスト", area: "アメリカンウォーターフロント", url: "/tds/restaurant/detail/498/", img: "map-hudson.jpg" },
+  liberty:   { name: "リバティ・ランディング・ダイナー", area: "アメリカンウォーターフロント", url: "/tds/restaurant/detail/435/", img: "map-liberty.jpg" },
+  horizon:   { name: "ホライズンベイ・レストラン", area: "ポートディスカバリー", url: "/tds/restaurant/detail/451/", img: "map-horizon.jpg" },
+  bayside:   { name: "ベイサイド・テイクアウト", area: "ポートディスカバリー", url: "/tds/restaurant/detail/453/", img: "map-bayside.jpg" },
+  yucatan:   { name: "ユカタン・ベースキャンプ・グリル", area: "ロストリバーデルタ", url: "/tds/restaurant/detail/459/", img: "map-yucatan.jpg" },
+  casbah:    { name: "カスバ・フードコート", area: "アラビアンコースト", url: "/tds/restaurant/detail/463/", img: "map-casbah.jpg" },
+  sebastian: { name: "セバスチャンのカリプソキッチン", area: "マーメイドラグーン", url: "/tds/restaurant/detail/468/", img: "map-sebastian.jpg" },
+  vulcania:  { name: "ヴォルケイニア・レストラン", area: "ミステリアスアイランド", url: "/tds/restaurant/detail/418/", img: "map-vulcania.jpg" },
+  arendelle: { name: "アレンデール・ロイヤルバンケット", area: "ファンタジースプリングス", url: "/tds/restaurant/detail/409/", img: "map-arendelle.jpg" },
+  snuggly:   { name: "スナグリーダックリング", area: "ファンタジースプリングス", url: "/tds/restaurant/detail/413/", img: "map-snuggly.jpg" },
+  lookout:   { name: "ルックアウト・クックアウト", area: "ファンタジースプリングス", url: "/tds/restaurant/detail/414/", img: "map-lookout.jpg" },
+  pcDock:    { name: "ポップコーンワゴン（ドックサイドステージ前）", area: "アメリカンウォーターフロント", url: "/tds/restaurant/detail/472/", img: "map-pc-dockside.jpg" },
+  pcLido:    { name: "ポップコーンワゴン（リドアイル前）", area: "アメリカンウォーターフロント", url: "/tds/restaurant/detail/471/", img: "map-pc-lido.jpg" },
+  pcLiberty: { name: "ポップコーンワゴン（リバティ・ランディング・ダイナー前）", area: "アメリカンウォーターフロント", url: "/tds/restaurant/detail/473/", img: "map-pc-liberty.jpg" },
+  pcSoaring: { name: "ポップコーンワゴン（ソアリン前）", area: "メディテレーニアンハーバー", url: "/tds/restaurant/detail/479/", img: "map-pc-soaring.jpg" },
+  pcHorizon: { name: "ポップコーンワゴン（ホライズンベイ・レストラン横）", area: "ポートディスカバリー", url: "/tds/restaurant/detail/475/", img: "map-pc-horizon.jpg" },
+  pcTink:    { name: "ポップコーンワゴン（ティンカーベルのビジーバギー前）", area: "ファンタジースプリングス", url: "/tds/restaurant/detail/490/", img: "map-pc-tink.jpg" },
+};
+const AREAS = ["メディテレーニアンハーバー", "アメリカンウォーターフロント", "ポートディスカバリー", "ロストリバーデルタ", "アラビアンコースト", "マーメイドラグーン", "ミステリアスアイランド", "ファンタジースプリングス"];
+const OFFICIAL = "https://www.tokyodisneyresort.jp";
+
+// 予定数は同じ商品をショップとアプリの両方に載せても共通（二重に数えない）
+const ITEMS = {
+  charm:   { name: "雪だるま風ぬいぐるみチャーム", short: "チャーム", price: "各2,300円", qty: 5, img: "charm-duffy.jpg", url: "/iframe/goods/17872101062/",
+             variants: [["charm-duffy.jpg", "ダッフィー", 2], ["charm-shelliemay.jpg", "シェリーメイ", 1], ["charm-linabell.jpg", "リーナ・ベル", 2]],
+             points: ["全7種のうち上の3種類だけ", "アプリ通販でも注文できる（②）"] },
+  figure:  { name: "雪だるま風フィギュア（単品）", short: "フィギュア", price: "1,500円", qty: 2, img: "g-figure.jpg", url: "/goods/113002820/",
+             points: ["全7種からランダムで1つ。キャラクターは選べない", "アプリはBOX販売のみ。単品は店頭で買う"] },
+  mug:     { name: "ダッフィー＆フレンズ 耐熱ガラスマグ", short: "ガラスマグ", price: "2,600円", qty: 1, img: "g-mug.jpg", url: "/goods/121003650/",
+             points: ["飲食メニューの注文はいらない", "アプリ通販でも注文できる（②）"] },
+  cap:     { name: "リーナ・ベル クリスマス ファンキャップ", short: "ファンキャップ", price: "3,500円", qty: 2, img: "g-cap.jpg", url: "/goods/133008019/",
+             points: ["当日かぶるなら店頭で買う", "アプリ通販でも注文できる（②）"] },
+  badge:   { name: "リーナ・ベル クリスマス衣装のぬいぐるみバッジ", short: "ぬいぐるみバッジ", price: "3,500円", qty: 2, tentative: true, img: "g-badge.jpg", url: "/goods/116002181",
+             points: ["当面アプリのみで販売。店頭にはない", "シーに入園した本人が、自分のアカウントで注文する", "個数は最終確認が必要"] },
+  cup:     { name: "リルリンリン スーベニアカップ", short: "スーベニアカップ", price: "対象デザート＋900円", qty: 1, img: "food-cup.jpg", url: "/food/5057/",
+             points: ["「ストロベリーケーキカップ」にカップを付けて注文", "カップ単品では買えない。1回の会計で1人1つまで"] },
+  tumbler: { name: "リルリンリン スーベニアタンブラー", short: "タンブラー", price: "対象ドリンク＋1,800円", qty: 1, img: "food-tumbler.jpg", url: "/food/5063/",
+             points: ["お店ごとに対象ドリンクが違う（下の店名の下に記載）", "タンブラー単品では買えない。1回の会計で1人1つまで"] },
+  gummy:   { name: "リルリンリン グミ付きミニスナックケース（ピンク）", short: "ミニスナックケース", price: "各1,500円", qty: 2, img: "food-gummy-pink.jpg", url: "/food/5061/",
+             points: ["「グミキャンディー、ミニスナックケース付き」を注文し、リボンを持ったピンクのデザインを選ぶ", "グリーンのデザイン（別商品）ではない", "ポップコーンバケットとは別物。1回の会計で1人1つまで"] },
+  bucket:  { name: "リルリンリン ポップコーンバケット", short: "ポップコーンバケット", price: "3,800円（ポップコーン込み）", qty: 2, img: "food-bucket.jpg", url: "/food/5066/",
+             points: ["ワゴンで「バケット付き」を買う。味はワゴンで決まる", "スタンバイパス対象外。現地の列・案内に従う", "1回の会計で1人1つまで"] },
+};
+
+const SECTIONS = [
+  { id: "shop", tag: "① ショップで買う", title: "スタンバイパスで入店して買う",
+    steps: ["シーに入園したら、公式アプリで対象ショップのスタンバイパスを取る", "指定時間にショップへ入って、商品を選んで会計", "入園したチケットを見せられるようにしておく（チケット認証あり）"],
+    callout: "<b>1人1アイテム1点。</b>シリーズ商品は対象3店のどれか1店で1日1回だけ。入る前に欲しいものをまとめておく。スタンバイパスは商品の取り置きではない。",
+    items: [["charm"], ["figure"], ["mug"], ["cap"]],
+    places: [["mcduck", "商品ページ掲載店"], ["auntpeg", "シリーズ取扱店"], ["galleria", "シリーズ取扱店"]],
+    placesNote: "どの店に何があるかはアプリで確かめる" },
+  { id: "app", tag: "② 公式アプリで注文", title: "入園後にアプリで注文、後日配送",
+    steps: ["当日のチケットでシーに入園する", "東京ディズニーリゾート・アプリの「ショッピング」を開く", "在庫と販売条件を確かめて、当日23:45までに注文を終える", "後日、家に届く"],
+    callout: "<b>入園前は注文できない。</b>23:45は注文できる時間の上限で、在庫の保証ではない。ショップのスタンバイパスはいらない。",
+    items: [["badge"]],
+    also: "チャーム・ガラスマグ・ファンキャップもアプリで注文できます（予定数は①と共通）。フィギュアはアプリだとBOXのみで、単品は買えません。" },
+  { id: "food", tag: "③ 飲食店で注文", title: "メニューと一緒に注文する",
+    steps: ["対象のお店で、対象メニューにスーベニアを付けて注文する", "グミのケースは「グミキャンディー、ミニスナックケース付き」を注文する"],
+    callout: "<b>スーベニア単品では買えない。</b>どれも1回の会計で1人1つまで。",
+    items: [
+      ["cup", [["zambini"], ["nydeli"], ["yucatan", "11/3から"], ["casbah"], ["vulcania"]]],
+      ["tumbler", [["zambini", "スペシャルスパークリングドリンク（キウイ＆ライム）"], ["hudson", "ホットゆず抹茶ドリンク"], ["bayside", "ホットゆず抹茶ドリンク"], ["yucatan", "ホットゆず抹茶ドリンク／ミスティッククリスタル・ドリンク（11/3から）"], ["casbah", "スペシャルラッシー（マンゴー＆ブルーゼリー）"], ["sebastian", "スペシャルドリンク"]]],
+      ["gummy", [["portofino"], ["zambini"], ["biscotti"], ["refrescos"], ["nydeli"], ["hudson"], ["liberty"], ["horizon"], ["casbah"], ["sebastian"], ["arendelle"], ["snuggly"], ["lookout"]]],
+    ] },
+  { id: "wagon", tag: "④ ポップコーンワゴン", title: "ワゴンでバケット付きを買う",
+    steps: ["下のワゴンのどれかに並ぶ", "「バケット付き」を買う（味はワゴンごとに決まっている）"],
+    callout: "<b>スタンバイパス対象外。</b>現地の列と案内に従う。ミニスナックケース（③）とは別の商品。",
+    items: [["bucket", [["pcDock", "キャラメル"], ["pcSoaring", "ブラックペッパー"], ["pcLido", "ガーリックシュリンプ"], ["pcTink", "ガーリックシュリンプ"], ["pcLiberty", "麻辣"], ["pcHorizon", "トリュフソルト"]]]] },
+];
+
+let done = {};
+try { done = JSON.parse(localStorage.getItem("tds1104-done") || "{}") || {}; } catch (e) { done = {}; }
+const save = () => { try { localStorage.setItem("tds1104-done", JSON.stringify(done)); } catch (e) {} };
+
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+function placeHTML(key, extra) {
+  const p = LOC[key];
+  return `<details class="place">
+    <summary><span class="pname">${esc(p.name)}</span><span class="pin">地図</span>
+      <span class="parea">${esc(p.area)}</span>
+      ${extra ? `<span class="pextra">${esc(extra)}</span>` : ""}</summary>
+    <div class="place-body">
+      <img data-src="img/${p.img}" alt="${esc(p.name)}の場所（公式マップ）" width="800" height="450">
+      <a href="${OFFICIAL}${p.url}" target="_blank" rel="noopener">公式の店舗ページを開く</a>
+    </div></details>`;
+}
+
+function itemHTML(key, places) {
+  const it = ITEMS[key];
+  const variants = it.variants ? `<div class="variants">${it.variants.map(([img, n, q]) =>
+    `<div class="variant"><img src="img/${img}" alt="${esc(n)}のチャーム" loading="lazy"><span>${esc(n)}</span><b>${q}個</b></div>`).join("")}</div>` : "";
+  const placeBlock = places ? `<div class="places"><div class="places-label">買える場所（タップで地図）</div>${places.map(([k, x]) => placeHTML(k, x)).join("")}</div>` : "";
+  return `<article class="item" data-key="${key}">
+    <div class="item-top">
+      <img class="thumb" src="img/${it.img}" alt="${esc(it.name)}" loading="lazy">
+      <div>
+        <h3>${esc(it.name)}</h3>
+        <div class="meta"><span class="qty">${it.qty}個</span>${it.tentative ? '<span class="tentative">仮</span>' : ""}<span class="price">${esc(it.price)}</span></div>
+        <div class="meta"><a href="${OFFICIAL}${it.url}" target="_blank" rel="noopener">公式の商品ページ</a></div>
+      </div>
+    </div>
+    ${variants}
+    <ul class="points">${it.points.map(p => `<li>${esc(p)}</li>`).join("")}</ul>
+    ${placeBlock}
+    <label class="check"><input type="checkbox" id="chk-${key}" data-key="${key}"> 買えた（${it.qty}個）</label>
+  </article>`;
+}
+
+function render() {
+  const main = document.getElementById("main");
+  let html = SECTIONS.map(s => `<section class="method" id="${s.id}">
+    <div class="method-head"><span class="tag">${s.tag}</span><h2>${s.title}</h2></div>
+    <ol class="steps">${s.steps.map(x => `<li>${x}</li>`).join("")}</ol>
+    <div class="callout">${s.callout}</div>
+    ${s.places ? `<div class="places"><div class="places-label">対象ショップ（タップで地図）・${s.placesNote}</div>${s.places.map(([k, x]) => placeHTML(k, x)).join("")}</div>` : ""}
+    ${s.items.map(([k, pl]) => itemHTML(k, pl)).join("")}
+    ${s.also ? `<p class="note">${s.also}</p>` : ""}
+  </section>`).join("");
+
+  // 場所から逆引き：エリア → 店 → そこで買えるもの
+  const byLoc = {};
+  const add = (loc, key) => { (byLoc[loc] = byLoc[loc] || new Set()).add(key); };
+  ["mcduck", "auntpeg", "galleria"].forEach(l => ["charm", "figure", "mug", "cap"].forEach(k => add(l, k)));
+  SECTIONS.forEach(s => s.items.forEach(([k, pl]) => (pl || []).forEach(([l]) => add(l, k))));
+  html += `<section class="method" id="where">
+    <div class="method-head"><span class="tag">場所から探す</span><h2>いる場所の近くで買えるもの</h2></div>
+    <p class="note">買えたものは線で消えます。アプリ注文のバッジは場所に関係なく入園後いつでも。</p>
+    ${AREAS.map(a => {
+      const locs = Object.keys(LOC).filter(l => LOC[l].area === a && byLoc[l]);
+      if (!locs.length) return "";
+      return `<div class="area"><h3>${a}</h3>${locs.map(l => {
+        const chips = [...byLoc[l]].map(k => `<span class="chip" data-chip="${k}">${ITEMS[k].short}</span>`).join("");
+        return placeHTML(l, null).replace('<span class="parea">', `<span class="chips">${chips}</span><span class="parea" hidden>`);
+      }).join("")}</div>`;
+    }).join("")}
+  </section>`;
+
+  html += `<section class="method" id="rules">
+    <div class="method-head"><span class="tag">注意・公式</span><h2>迷ったときに見る公式ページ</h2></div>
+    <ul class="points">
+      <li>販売場所・価格は11/2時点の案内。当日の在庫と販売方法はアプリと現地で確かめる</li>
+      <li>店頭ショップのスタンバイパス対象（11/2から当面）：マクダックス・デパートメントストア、アーント・ペグズ・ヴィレッジストア、ガッレリーア・ディズニー</li>
+      <li>通販も品切れになることがある。その日に身につけたい物は店頭で</li>
+    </ul>
+    <div class="links">
+      <a href="https://faq.tokyodisneyresort.jp/answer/6ac49dd19d7b5045c5704a36/" target="_blank" rel="noopener">販売・購入制限の公式案内</a>
+      <a href="https://www.tokyodisneyresort.jp/tdr/guide/app_service/standbypass/" target="_blank" rel="noopener">スタンバイパスの公式案内</a>
+      <a href="https://www.tokyodisneyresort.jp/tds/map.html" target="_blank" rel="noopener">シー全体のマップ（公式）</a>
+      <a href="https://www.tokyodisneyresort.jp/tds/daily/calendar/20261104" target="_blank" rel="noopener">11/4の運営カレンダー（公式）</a>
+    </div>
+  </section>`;
+  main.innerHTML = html;
+}
+
+function sync() {
+  let n = 0;
+  const total = Object.values(ITEMS).reduce((a, it) => a + it.qty, 0);
+  Object.keys(ITEMS).forEach(k => {
+    const on = !!done[k];
+    if (on) n += ITEMS[k].qty;
+    document.querySelectorAll(`.item[data-key="${k}"]`).forEach(el => el.classList.toggle("is-done", on));
+    document.querySelectorAll(`input[data-key="${k}"]`).forEach(el => { el.checked = on; });
+    document.querySelectorAll(`[data-chip="${k}"]`).forEach(el => el.classList.toggle("got", on));
+  });
+  document.getElementById("count").textContent = `${n} / ${total}`;
+  document.getElementById("bar").style.width = `${(n / total) * 100}%`;
+}
+
+render();
+sync();
+document.addEventListener("change", e => {
+  const k = e.target.dataset && e.target.dataset.key;
+  if (!k) return;
+  done[k] = e.target.checked;
+  save();
+  sync();
+});
+// 地図は開いたときだけ読み込む（園内の通信量を抑える）
+document.addEventListener("toggle", e => {
+  const d = e.target;
+  if (d.matches && d.matches("details.place") && d.open) {
+    const img = d.querySelector("img[data-src]");
+    if (img) { img.src = img.dataset.src; img.removeAttribute("data-src"); }
+  }
+}, true);
+</script>
+</body>
+</html>
