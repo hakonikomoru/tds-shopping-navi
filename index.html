@@ -278,6 +278,14 @@ footer { border-top: 1px solid #d9c797; padding-top: 12px; }
   .title-line h1 { font-size: 18px; }
   header.top .eyebrow { font-size: 10px; }
 }
+
+/* 店頭と配送を選べる品は、詳細を開く前に購入経路を表示 */
+.card-purchase { margin: 0 12px 12px; padding: 10px 12px; border: 1px solid #c7d3b9; border-radius: 10px; background: #f2f6eb; }
+.purchase-tag { display: inline-block; color: #27583c; font-size: 13px; line-height: 1.6; }
+.card-purchase p { margin: 4px 0 0; color: #52634f; font-size: 13px; line-height: 1.65; }
+.also-purchase { padding: 10px 12px; border-radius: 10px; background: #f2f6eb; border: 1px solid #c7d3b9; font-size: 14px; }
+.also-purchase strong { color: #27583c; }
+.also-purchase p { margin: 4px 0 0; }
 </style>
 </head>
 <body>
@@ -346,15 +354,20 @@ const OFFICIAL = "https://www.tokyodisneyresort.jp";
 const SHOP_PLACES = [["mcduck", "商品ページ掲載店"], ["auntpeg", "シリーズ取扱店"], ["galleria", "シリーズ取扱店"]];
 
 // 予定数は同じ商品をショップとアプリの両方に載せても共通（二重に数えない）
+const BOTH_PURCHASE = {
+  label: "店頭＋配送注文",
+  note: "店頭で購入、または公式アプリで注文して後日配送。配送はシー入園後に注文でき、ショップのパスは不要です。",
+};
 const ITEMS = {
-  charm:   { name: "雪だるま風ぬいぐるみチャーム", short: "チャーム", price: "各2,300円", qty: 5, img: "charm-duffy.jpg", url: "/iframe/goods/17872101062/",
+  charm:   { name: "雪だるま風ぬいぐるみチャーム", short: "チャーム", price: "各2,300円", qty: 5, img: "charm-duffy.jpg", purchase: BOTH_PURCHASE, url: "/iframe/goods/17872101062/",
              variants: [["charm-duffy.jpg", "ダッフィー", 2, "each"], ["charm-shelliemay.jpg", "シェリーメイ", 1], ["charm-linabell.jpg", "リーナ・ベル", 2, "each"]],
              points: ["全7種のうち、この3種類だけ", "ダッフィーとリーナ・ベルは、二人がそれぞれ1個ずつ買う（同じ物は1人1個まで）", "アプリ通販でも注文できる"], places: SHOP_PLACES },
-  figure:  { name: "雪だるま風フィギュア（単品）", short: "フィギュア", price: "1,500円", qty: 2, split: "each", img: "g-figure.jpg", url: "/goods/113002820/",
+  figure:  { name: "雪だるま風フィギュア（単品）", short: "フィギュア", price: "1,500円", qty: 2, split: "each", img: "g-figure.jpg",
+             purchase: { label: "店頭：単品／配送：BOXのみ", note: "予定の単品2個は店頭で購入。配送注文はBOX販売のみなので、単品2個の代わりとして注文しないよう注意。" }, url: "/goods/113002820/",
              points: ["二人がそれぞれ1個ずつ買う（同じ単品は1人1個まで）", "全7種からランダムで1つ。キャラクターは選べない", "アプリはBOX販売のみ。単品は店頭で買う"], places: SHOP_PLACES },
-  mug:     { name: "耐熱ガラスマグ", short: "ガラスマグ", price: "2,600円", qty: 1, img: "g-mug.jpg", url: "/goods/121003650/",
+  mug:     { name: "耐熱ガラスマグ", short: "ガラスマグ", price: "2,600円", qty: 1, img: "g-mug.jpg", purchase: BOTH_PURCHASE, url: "/goods/121003650/",
              points: ["ダッフィー＆フレンズのマグ。飲食メニューの注文はいらない", "アプリ通販でも注文できる"], places: SHOP_PLACES },
-  cap:     { name: "リーナ・ベル ファンキャップ", short: "ファンキャップ", price: "3,500円", qty: 2, split: "each", img: "g-cap.jpg", url: "/goods/133008019/",
+  cap:     { name: "リーナ・ベル ファンキャップ", short: "ファンキャップ", price: "3,500円", qty: 2, split: "each", img: "g-cap.jpg", purchase: BOTH_PURCHASE, url: "/goods/133008019/",
              points: ["二人がそれぞれ1個ずつ買う（同じ物は1人1個まで）", "クリスマスのファンキャップ。当日かぶるなら店頭で買う", "アプリ通販でも注文できる"], places: SHOP_PLACES },
   badge:   { name: "リーナ・ベル ぬいぐるみバッジ", short: "ぬいぐるみバッジ", price: "3,500円", qty: 2, tentative: true, img: "g-badge.jpg", url: "/goods/116002181",
              points: ["公式案内（11/2時点）では1人1点。二人がそれぞれ自分のアカウントで1個ずつ注文する", "当日アプリのカートで数量を2にできたら、1人で2個注文してよい。できなければ1個ずつ", "クリスマス衣装のバッジ。当面アプリのみで販売、店頭にはない", "当日シーに入園してから、23:45までに注文。後日配送", "個数は最終確認が必要"] },
@@ -377,11 +390,11 @@ const ITEMS = {
 };
 
 const METHODS = [
-  { id: "shop", label: "ショップ", title: "ショップで買う", how: "スタンバイパスで入店", items: ["charm", "figure", "mug", "cap"],
+  { id: "shop", label: "ショップ", title: "ショップで買う", how: "店頭はスタンバイパス", items: ["charm", "figure", "mug", "cap"],
     steps: ["シーに入園したら、公式アプリで対象ショップのスタンバイパスを取る", "指定時間にショップへ入って、欲しい対象商品をすべて選んでから会計", "買う人それぞれが、当日入園したチケットを見せられるようにしておく（チケット認証あり）"],
     callout: "<b>同じ商品は1人1点まで。</b>違う商品ならそれぞれ1点ずつ選べる。2個欲しい物（ダッフィーとリーナ・ベルのチャーム、フィギュア、ファンキャップ）は二人が1個ずつ買う。<br><b>会計は対象3店を通じて1日1回だけ。</b>買った後に別の店や同じ店で買い足すことはできない。",
     note: "対象店（11/2から当面）：マクダックス・デパートメントストア、アーント・ペグズ・ヴィレッジストア、ガッレリーア・ディズニー。どの店に何があるかはアプリで確かめる。スタンバイパスは商品の取り置きではない。" },
-  { id: "app", label: "アプリ", title: "公式アプリで注文", how: "入園後に注文・後日配送", items: ["badge"],
+  { id: "app", label: "アプリ", title: "公式アプリで注文", how: "入園後に注文・後日配送", items: ["badge"], alsoItems: ["charm", "mug", "cap"],
     steps: ["当日のチケットでシーに入園する", "東京ディズニーリゾート・アプリの「ショッピング」を開く", "在庫と販売条件を確かめて、当日23:45までに注文を終える", "後日、家に届く"],
     callout: "<b>同じ商品は1人1点まで。</b>2個欲しいときは、二人が各自のアカウントで1個ずつ注文する。チケットを共有していても、1人の注文に2人分はまとめられない。<br><b>入園前は注文できない。</b>23:45は注文できる時間の上限で、在庫の保証ではない。",
     note: "チャーム・ガラスマグ・ファンキャップもアプリで注文できる（予定数はショップと共通）。フィギュアはアプリだとBOXのみ。スタンバイパスはいらない。" },
@@ -397,8 +410,8 @@ METHODS.forEach(m => m.items.forEach(k => { METHOD_OF[k] = m; }));
 // 2026-11-02確認。アプリ条件は公式案内、列は購入経路からの目安（待ち時間の実測ではない）。
 const GUIDANCE = {
   shop: { queue: true, app: "required", noApp: false,
-    queueLabel: "列に注意：入店・レジ", appLabel: "アプリ必要：入店パス",
-    hint: "入園後にスタンバイパスを確認。指定時刻にも入店・会計待ちの可能性あり。パスは在庫の確保ではありません。" },
+    queueLabel: "店頭の列に注意：入店・レジ", appLabel: "店頭はアプリ必要：入店パス",
+    hint: "店頭で買う場合は入園後にスタンバイパスを確認。指定時刻にも入店・会計待ちの可能性あり。パスは在庫の確保ではありません。" },
   app: { queue: false, app: "required", noApp: false,
     queueLabel: "店頭の列なし", appLabel: "アプリ限定：配送注文",
     hint: "入園後にショッピングで注文。ショップのパスは不要。品切れの可能性があるので、23:45まで待たずに確認。" },
@@ -495,6 +508,7 @@ function cardHTML(key) {
       </div>
       <button class="tick" data-key="${key}" aria-pressed="false" aria-label="${esc(it.short)}を買えた">${CHECK_SVG}<span class="tick-label">買えた</span></button>
     </div>
+    ${it.purchase ? `<div class="card-purchase"><strong class="purchase-tag">${esc(it.purchase.label)}</strong><p>${esc(it.purchase.note)}</p></div>` : ""}
     <div class="card-guidance">${guidanceHTML(guidanceFor(key))}</div>
     ${variants}
     <details class="more">
@@ -547,7 +561,7 @@ const VIEWS = {
       <p class="note" id="all-done-note" hidden>ぜんぶ買えました。</p>
       <p class="note" id="no-match-note" hidden>この条件に合う商品はありません。「条件なし」や「ぜんぶ」に戻すと確認できます。</p>
       <p class="note">「アプリなしで買える」は、店頭注文できる店がある商品です。グミケースはFSの3店を除きます。販売方法は当日も確認してください。</p>
-      <p class="note">「買えた」はこの端末だけに保存されます。バッジ2個は仮の数です。</p>`;
+      <p class="note">「買えた」は購入方法にかかわらず、この端末に共通で保存されます。店頭と配送の両方で買う必要はありません。バッジ2個は仮の数です。</p>`;
   },
   where() {
     const byLoc = {};
@@ -565,7 +579,8 @@ const VIEWS = {
   how() {
     return METHODS.map(m => `<section class="method">
         <div class="group-head">${mtag(m)}<h2>${m.title}</h2></div>
-        <div class="for">対象：${m.items.map(k => ITEMS[k].short).join("・")}</div>
+        <div class="for">${m.id === "app" ? "配送注文のみ（当面）" : "対象"}：${m.items.map(k => ITEMS[k].short).join("・")}</div>
+        ${m.alsoItems ? `<div class="also-purchase"><strong>店頭＋配送注文</strong><p>${m.alsoItems.map(k => ITEMS[k].short).join("・")}</p><p class="note">どちらかの方法で予定数を購入。店頭で買えた分を配送でも重ねて注文しないようにしてください。</p></div>` : ""}
         <div class="card-guidance">${guidanceHTML(m.id === "food" ? { ...GUIDANCE.gummy, hint: "店によって注文方法が異なります。FSの3店はモバイルオーダーが必要。ほかは店頭注文も選べます。" } : GUIDANCE[m.id])}</div>
         <ol class="steps">${m.steps.map(x => `<li>${x}</li>`).join("")}</ol>
         <div class="callout">${m.callout}</div>
