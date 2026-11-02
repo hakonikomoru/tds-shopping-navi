@@ -293,6 +293,23 @@ footer { border-top: 1px solid var(--line); padding-top: 12px; }
   header.top .eyebrow { font-size: 10px; }
 }
 
+/* 共通レストランは購入予定のスーベニアから案内。 */
+.common-panel { background: #fff; border: 1px solid #bddae9; border-radius: 16px; padding: 14px; display: grid; gap: 10px; min-width: 0; }
+.common-panel h2 { font-size: 18px; color: #326480; }
+.common-panel > p { margin: 0; }
+.common-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.common-list li { background: #f1f9fc; border: 1px solid var(--line); border-radius: 12px; padding: 0 10px 10px; }
+.common-place { width: 100%; min-height: 60px; padding: 10px 0 8px; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; background: none; border: 0; text-align: left; cursor: pointer; }
+.common-place b { display: block; font-size: 14px; line-height: 1.5; }
+.common-place small { display: block; color: var(--muted); font-size: 12px; }
+.common-map { background: #deeff8; color: #326480; border-radius: 999px; padding: 5px 9px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.common-items { display: flex; flex-wrap: wrap; gap: 4px; }
+.common-badge { grid-column: 1 / -1; justify-self: start; padding: 2px 8px; margin-top: 4px; border-radius: 6px; background: #deeff8; color: #326480; font-size: 12px; font-weight: 700; }
+.common-shortcut { border: 1px solid #bddae9; border-radius: 12px; background: #edf7fc; padding: 10px 12px; display: grid; gap: 6px; }
+.common-shortcut p { margin: 0; color: #41647a; font-size: 13px; }
+.common-shortcut button { justify-self: start; min-height: 44px; padding: 8px 12px; border: 1px solid #83b3cd; border-radius: 9px; background: #fff; color: #326480; font-size: 14px; font-weight: 700; cursor: pointer; }
+details.place { scroll-margin-top: calc(130px + env(safe-area-inset-top, 0px)); }
+
 /* 見送りは購入済みと区別し、内容を残して取り消し線を付ける。 */
 .card.is-skipped { background: #f3f6f8; border-style: dashed; }
 .card.is-skipped h3, .card.is-skipped .qty { color: var(--muted); }
@@ -501,14 +518,46 @@ function guidanceHTML(g) {
   return `<div class="signals"><span class="signal ${g.queue ? "queue" : "neutral"}">${esc(g.queueLabel)}</span><span class="signal ${tone}">${esc(g.appLabel)}</span></div><p>${esc(g.hint)}</p>`;
 }
 
-function placeHTML(key, extra, chips) {
+function foodItemsAt(placeKey) {
+  return METHODS.find(m => m.id === "food").items.filter(key =>
+    isPlanned(key) && ITEMS[key].places.some(([place]) => place === placeKey));
+}
+function commonFoodPlaces() {
+  return Object.keys(LOC).filter(key => foodItemsAt(key).length >= 2);
+}
+function commonFoodShortcut() {
+  const count = commonFoodPlaces().length;
+  return count ? `<div class="common-shortcut"><p>購入予定のスーベニアを同じお店で。</p><button type="button" data-open-common>まとめて買える${count}店を見る</button></div>` : "";
+}
+function commonFoodHTML() {
+  const places = commonFoodPlaces();
+  if (!places.length) return "";
+  return `<section class="common-panel" id="common-food" tabindex="-1" aria-label="まとめて買えるレストラン">
+    <h2>まとめて買えるレストラン</h2>
+    <p class="note">購入予定のスーベニアを2種類以上扱う${places.length}店。店名をタップすると地図が開きます。</p>
+    <ul class="common-list">${places.map(key => `<li>
+      <button type="button" class="common-place" data-common-place="${key}" aria-label="${esc(LOC[key].name)}の地図を表示"><span><b>${esc(LOC[key].name)}</b><small>${esc(LOC[key].area)}</small></span><span class="common-map" aria-hidden="true">地図</span></button>
+      <div class="common-items">${foodItemsAt(key).map(k => `<span class="chip" data-chip="${k}">${itemLabel(k)}</span>`).join("")}</div>
+    </li>`).join("")}</ul>
+    <p class="note">タンブラーは対象ドリンク、グミケースはグミ付きメニューをそれぞれ注文。カップは見送りのため、共通店の条件に含めていません。</p>
+    <p class="note">11/3に公式の販売店舗を確認。当日の在庫はアプリ・店頭で確認してください。<a href="${OFFICIAL}${ITEMS.tumbler.url}" target="_blank" rel="noopener">タンブラーの公式情報</a>／<a href="${OFFICIAL}${ITEMS.gummy.url}" target="_blank" rel="noopener">グミケースの公式情報</a></p>
+  </section>`;
+}
+
+function placeHTML(key, extra, chips, id) {
   const p = LOC[key], access = ACCESS[PLACE_ACCESS[key]];
-  return `<details class="place">
+  const foodItems = foodItemsAt(key);
+  const menu = foodItems.map(k => {
+    const detail = ITEMS[k].places.find(([place]) => place === key)[1];
+    return detail ? `${ITEMS[k].short}：${detail}` : "";
+  }).filter(Boolean).join("／");
+  return `<details class="place"${id ? ` id="${esc(id)}"` : ""}>
     <summary>
       <span class="pname">${esc(p.name)}</span>
       <span class="pin"><span class="pin-label"></span></span>
       ${chips ? `<span class="chips">${chips}</span>` : `<span class="parea">${esc(p.area)}</span>`}
-      ${extra ? `<span class="pextra">${esc(extra)}</span>` : ""}
+      ${extra || menu ? `<span class="pextra">${esc(extra || menu)}</span>` : ""}
+      ${foodItems.length >= 2 ? `<span class="common-badge">スーベニア${foodItems.length}種類をまとめて：${foodItems.map(k => esc(ITEMS[k].short)).join("＋")}</span>` : ""}
       <span class="place-signals"><span class="signal ${access.tone}">${esc(access.label)}</span></span>
       <span class="place-guidance">${esc(access.wait)}</span>
     </summary>
@@ -578,6 +627,7 @@ const VIEWS = {
       <p class="note" id="filter-result" role="status" aria-live="polite"></p>
       ${METHODS.map(m => `<div class="group" data-method="${m.id}">
         <div class="group-head">${mtag(m)}<h2>${m.title}</h2><span class="how">${m.how}</span></div>
+        ${m.id === "food" ? commonFoodShortcut() : ""}
         ${m.items.map(cardHTML).join("")}
       </div>`).join("")}
       <p class="note" id="all-done-note" hidden>ぜんぶ買えました。</p>
@@ -588,19 +638,20 @@ const VIEWS = {
   where() {
     const byLoc = {};
     Object.keys(ITEMS).forEach(k => (ITEMS[k].places || []).forEach(([l]) => { (byLoc[l] = byLoc[l] || []).push(k); }));
-    return `<p class="view-intro">いるエリアの近くで買えるものを探せます。お店をタップすると地図が出ます。ぬいぐるみバッジはアプリ注文なので、場所に関係なく入園後に注文（当日23:45まで・在庫次第）。店舗名の下で、アプリの要否と待ち列を確認できます。</p>
+    return `${commonFoodHTML()}<p class="view-intro">いるエリアの近くで買えるものを探せます。お店をタップすると地図が出ます。ぬいぐるみバッジはアプリ注文なので、場所に関係なく入園後に注文（当日23:45まで・在庫次第）。店舗名の下で、アプリの要否と待ち列を確認できます。</p>
       ${AREAS.map(a => {
         const locs = Object.keys(LOC).filter(l => LOC[l].area === a && byLoc[l]);
         if (!locs.length) return "";
         return `<div class="area"><h2>${a}</h2>${locs.map(l => {
           const chips = byLoc[l].map(k => `<span class="chip${ITEMS[k].skipped ? " skipped" : ""}" data-chip="${k}">${itemLabel(k)}</span>`).join("");
-          return placeHTML(l, null, chips);
+          return placeHTML(l, null, chips, `where-${l}`);
         }).join("")}</div>`;
       }).join("")}`;
   },
   how() {
     return METHODS.map(m => `<section class="method">
         <div class="group-head">${mtag(m)}<h2>${m.title}</h2></div>
+        ${m.id === "food" ? commonFoodShortcut() : ""}
         <div class="for">${m.id === "app" ? "配送注文のみ（当面）" : "対象"}：${m.items.map(itemLabel).join("・")}</div>
         ${m.alsoItems ? `<div class="also-purchase"><strong>店頭＋配送注文</strong><p>${m.alsoItems.map(k => ITEMS[k].short).join("・")}</p><p class="note">どちらかの方法で予定数を購入。店頭で買えた分を配送でも重ねて注文しないようにしてください。</p></div>` : ""}
         <div class="card-guidance">${guidanceHTML(m.id === "food" ? { ...GUIDANCE.gummy, hint: "店によって注文方法が異なります。FSの3店はモバイルオーダーが必要。ほかは店頭注文も選べます。" } : GUIDANCE[m.id])}</div>
@@ -689,6 +740,21 @@ function sync() {
 }
 
 document.addEventListener("click", e => {
+  if (e.target.closest("[data-open-common]")) {
+    show("where", true);
+    document.getElementById("common-food")?.focus({ preventScroll: true });
+    return;
+  }
+  const commonPlace = e.target.closest("[data-common-place]");
+  if (commonPlace) {
+    const place = document.getElementById(`where-${commonPlace.dataset.commonPlace}`);
+    if (place) {
+      place.open = true;
+      place.querySelector("summary").focus({ preventScroll: true });
+      place.scrollIntoView({ block: "start" });
+    }
+    return;
+  }
   const tick = e.target.closest(".tick");
   if (tick) { const k = tick.dataset.key; if (!isPlanned(k)) return; done[k] = !done[k]; store.set("tds1104-done", done); sync(); return; }
   const f = e.target.closest("[data-filter]");

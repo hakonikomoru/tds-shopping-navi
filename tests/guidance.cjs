@@ -41,4 +41,21 @@ assert.equal(run("matchesNeed('gummy','app') && matchesNeed('gummy','noapp')"),t
 assert.equal(run("matchesNeed('badge','queue')"),false);
 assert.match(run('VIEWS.rules()'),/2026年11月2日/);
 assert.match(run('VIEWS.how()'),/モバイルオーダー/);
-console.log('PASS: 商品9区分・店舗25か所の案内、条件フィルター、カップ見送り・購入予定17個');
+assert.deepEqual(Array.from(run('commonFoodPlaces()')),['zambini','hudson','casbah','sebastian'],'購入予定2種類の共通4店');
+assert.deepEqual(Array.from(run("foodItemsAt('zambini')")),['tumbler','gummy'],'見送りカップは共通判定から除外');
+for (const k of ['nydeli','yucatan','bayside','arendelle','mcduck','pcDock']) {
+  assert.equal(run(`commonFoodPlaces().includes('${k}')`),false,'1種類・ショップ・ワゴンを共通店にしない');
+}
+assert.equal(run('done={tumbler:true}; commonFoodPlaces().length'),4,'購入済みでも取扱店情報を残す');
+run('done={}');
+assert.equal(run('ITEMS.cup.skipped=false; commonFoodPlaces().length'),6,'購入予定に戻した品は販売場所から自動集計');
+run('ITEMS.cup.skipped=true');
+assert.match(run('commonFoodHTML()'),/タンブラー/);
+assert.match(run('commonFoodHTML()'),/グミケース/);
+assert.match(run('commonFoodHTML()'),/対象ドリンク/);
+assert.match(run('VIEWS.where()'),/まとめて買えるレストラン/);
+assert.match(run('VIEWS.list()'),/まとめて買える4店を見る/);
+assert.match(run('VIEWS.how()'),/まとめて買える4店を見る/);
+assert.match(run("placeHTML('zambini')"),/スーベニア2種類をまとめて/);
+assert.doesNotMatch(run("placeHTML('nydeli')"),/スーベニア2種類をまとめて/);
+console.log('PASS: 商品9区分・店舗25か所、カップ見送り・購入予定17個、共通レストラン4店');
