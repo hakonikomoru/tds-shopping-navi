@@ -293,6 +293,16 @@ footer { border-top: 1px solid var(--line); padding-top: 12px; }
   header.top .eyebrow { font-size: 10px; }
 }
 
+/* 見送りは購入済みと区別し、内容を残して取り消し線を付ける。 */
+.card.is-skipped { background: #f3f6f8; border-style: dashed; }
+.card.is-skipped h3, .card.is-skipped .qty { color: var(--muted); }
+.card.is-skipped s { text-decoration-thickness: 1.5px; }
+.card.is-skipped .thumb { opacity: .65; }
+.skip-note { margin: 6px 0 0; font-size: 12px; font-weight: 700; color: #526e80; }
+.skip-status { width: 64px; padding: 8px 3px; border: 1px solid #c7d5dd; border-radius: 10px; background: #e8eef2; color: #526e80; text-align: center; font-size: 12px; font-weight: 700; }
+.chip.skipped { background: #e8eef2; color: #526e80; }
+@media (max-width: 360px) { .skip-status { width: 52px; } }
+
 /* 店頭と配送を選べる品は、詳細を開く前に購入経路を表示 */
 .card-purchase { margin: 0 12px 12px; padding: 10px 12px; border: 1px solid #c8e2ef; border-radius: 10px; background: #edf7fc; }
 .purchase-tag { display: inline-block; color: #326480; font-size: 13px; line-height: 1.6; }
@@ -312,7 +322,7 @@ footer { border-top: 1px solid var(--line); padding-top: 12px; }
         <div class="eyebrow">11月4日（水）東京ディズニーシー</div>
         <div class="title-line"><div class="snowman-mini" aria-hidden="true"><div class="snowman"><span class="snowman-body"></span><span class="snowman-head"></span><span class="snowman-nose"></span><span class="snowman-cheeks"></span><span class="snowman-hat"></span><span class="snowman-scarf"></span></div></div><h1>シー買い物ナビ</h1></div>
       </div>
-      <div class="remain" id="remain" aria-live="polite"><small id="remain-head">あと</small><b id="remain-n">18</b><span class="unit" id="remain-unit">個</span><small id="remain-label">全18個中</small></div>
+      <div class="remain" id="remain" aria-live="polite"><small id="remain-head">あと</small><b id="remain-n">17</b><span class="unit" id="remain-unit">個</span><small id="remain-label">全17個中</small></div>
     </div>
     <div class="bar"><i id="bar"></i></div>
   </div>
@@ -379,7 +389,7 @@ const ITEMS = {
              points: ["二人がそれぞれ1個ずつ買う（同じ物は1人1個まで）", "クリスマスのファンキャップ。当日かぶるなら店頭で買う", "アプリ通販でも注文できる"], places: SHOP_PLACES },
   badge:   { name: "リーナ・ベル ぬいぐるみバッジ", short: "ぬいぐるみバッジ", price: "3,500円", qty: 2, tentative: true, img: "g-badge.jpg", url: "/goods/116002181",
              points: ["公式案内（11/2時点）では1人1点。二人がそれぞれ自分のアカウントで1個ずつ注文する", "当日アプリのカートで数量を2にできたら、1人で2個注文してよい。できなければ1個ずつ", "クリスマス衣装のバッジ。当面アプリのみで販売、店頭にはない", "当日シーに入園してから、23:45までに注文。後日配送", "個数は最終確認が必要"] },
-  cup:     { name: "リルリンリン スーベニアカップ", short: "カップ", price: "デザート＋900円", qty: 1, img: "food-cup.jpg", url: "/food/5057/",
+  cup:     { name: "リルリンリン スーベニアカップ", short: "カップ", skipped: true, price: "デザート＋900円", qty: 1, img: "food-cup.jpg", url: "/food/5057/",
              order: "「ストロベリーケーキカップ」にカップを付けて注文",
              points: ["カップ単品では買えない。1回の会計で1人1つまで"],
              places: [["zambini"], ["nydeli"], ["yucatan", "11/3から"], ["casbah"], ["vulcania"]] },
@@ -462,7 +472,8 @@ function matchesNeed(key, filter) {
   const g = guidanceFor(key);
   return filter === "queue" ? g.queue : filter === "app" ? ["required", "conditional"].includes(g.app) : filter === "noapp" ? g.noApp : true;
 }
-const TOTAL = Object.values(ITEMS).reduce((a, it) => a + it.qty, 0);
+const isPlanned = key => !ITEMS[key].skipped;
+const TOTAL = Object.keys(ITEMS).filter(isPlanned).reduce((a, key) => a + ITEMS[key].qty, 0);
 
 const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -472,7 +483,15 @@ let done = store.get("tds1104-done", {}) || {};
 let onlyLeft = !!store.get("tds1104-onlyleft", false);
 let needFilter = "all"; // 開き直した時は全商品を表示。購入済みの保存キーは維持。
 
+function matchesList(key) {
+  return (!onlyLeft || (isPlanned(key) && !done[key])) && matchesNeed(key, needFilter);
+}
+function purchasedCount() {
+  return Object.keys(ITEMS).reduce((n, key) => n + (isPlanned(key) && done[key] ? ITEMS[key].qty : 0), 0);
+}
+
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const itemLabel = key => ITEMS[key].skipped ? `<s>${esc(ITEMS[key].short)}</s>（見送り）` : esc(ITEMS[key].short);
 const mtag = m => `<span class="mtag ${m.id}">${m.label}</span>`;
 const splitHTML = sp => sp === "each" ? '<span class="split each">二人で1個ずつ</span>' : "";
 const CHECK_SVG ='<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
@@ -506,15 +525,16 @@ function cardHTML(key) {
     `<div class="variant"><img src="img/${img}" alt="${esc(n)}のチャーム" loading="lazy"><span>${esc(n)}</span><b>${q}個</b>${splitHTML(sp)}</div>`).join("")}</div>` : "";
   const places = it.places ? `<div class="places"><div class="places-label">${m.id === "shop" ? "対象ショップ（どれか1店）" : `買える場所 ${it.places.length}か所`}・タップで地図</div>${it.places.map(([k, x]) => placeHTML(k, x)).join("")}</div>` : "";
   const moreLabel = it.places ? (m.id === "shop" ? "買い方と対象ショップ" : `買い方と場所（${it.places.length}か所）`) : "買い方";
-  return `<article class="card" data-key="${key}" id="item-${key}">
+  return `<article class="card${it.skipped ? " is-skipped" : ""}" data-key="${key}" id="item-${key}">
     <div class="card-main">
       <img class="thumb" src="img/${it.img}" alt="${esc(it.name)}" loading="lazy">
       <div>
-        <h3>${esc(it.name)}</h3>
-        <div class="sub"><span class="qty">${it.qty}個</span>${it.tentative ? '<span class="tentative">仮</span>' : ""}<span>${esc(it.price)}</span></div>
+        <h3>${it.skipped ? `<s>${esc(it.name)}</s>` : esc(it.name)}</h3>
+        <div class="sub"><span class="qty">${it.skipped ? `<s>${it.qty}個</s>` : `${it.qty}個`}</span>${it.tentative ? '<span class="tentative">仮</span>' : ""}<span>${esc(it.price)}</span></div>
+        ${it.skipped ? '<p class="skip-note">今回は買わない</p>' : ""}
         ${it.split ? `<div class="sub">${splitHTML(it.split)}</div>` : ""}
       </div>
-      <button class="tick" data-key="${key}" aria-pressed="false" aria-label="${esc(it.short)}を買えた">${CHECK_SVG}<span class="tick-label">買えた</span></button>
+      ${it.skipped ? '<span class="skip-status">見送り</span>' : `<button class="tick" data-key="${key}" aria-pressed="false" aria-label="${esc(it.short)}を買えた">${CHECK_SVG}<span class="tick-label">買えた</span></button>`}
     </div>
     ${it.purchase ? `<div class="card-purchase"><strong class="purchase-tag">${esc(it.purchase.label)}</strong><p>${esc(it.purchase.note)}</p></div>` : ""}
     <div class="card-guidance">${guidanceHTML(guidanceFor(key))}</div>
@@ -573,7 +593,7 @@ const VIEWS = {
         const locs = Object.keys(LOC).filter(l => LOC[l].area === a && byLoc[l]);
         if (!locs.length) return "";
         return `<div class="area"><h2>${a}</h2>${locs.map(l => {
-          const chips = byLoc[l].map(k => `<span class="chip" data-chip="${k}">${ITEMS[k].short}</span>`).join("");
+          const chips = byLoc[l].map(k => `<span class="chip${ITEMS[k].skipped ? " skipped" : ""}" data-chip="${k}">${itemLabel(k)}</span>`).join("");
           return placeHTML(l, null, chips);
         }).join("")}</div>`;
       }).join("")}`;
@@ -581,7 +601,7 @@ const VIEWS = {
   how() {
     return METHODS.map(m => `<section class="method">
         <div class="group-head">${mtag(m)}<h2>${m.title}</h2></div>
-        <div class="for">${m.id === "app" ? "配送注文のみ（当面）" : "対象"}：${m.items.map(k => ITEMS[k].short).join("・")}</div>
+        <div class="for">${m.id === "app" ? "配送注文のみ（当面）" : "対象"}：${m.items.map(itemLabel).join("・")}</div>
         ${m.alsoItems ? `<div class="also-purchase"><strong>店頭＋配送注文</strong><p>${m.alsoItems.map(k => ITEMS[k].short).join("・")}</p><p class="note">どちらかの方法で予定数を購入。店頭で買えた分を配送でも重ねて注文しないようにしてください。</p></div>` : ""}
         <div class="card-guidance">${guidanceHTML(m.id === "food" ? { ...GUIDANCE.gummy, hint: "店によって注文方法が異なります。FSの3店はモバイルオーダーが必要。ほかは店頭注文も選べます。" } : GUIDANCE[m.id])}</div>
         <ol class="steps">${m.steps.map(x => `<li>${x}</li>`).join("")}</ol>
@@ -639,13 +659,12 @@ function show(view, scrollTop) {
 }
 
 function sync() {
-  let n = 0;
+  const n = purchasedCount();
   Object.keys(ITEMS).forEach(k => {
-    const on = !!done[k];
-    if (on) n += ITEMS[k].qty;
+    const on = isPlanned(k) && !!done[k];
     document.querySelectorAll(`.card[data-key="${k}"]`).forEach(el => {
       el.classList.toggle("is-done", on);
-      el.hidden = (onlyLeft && on) || !matchesNeed(k, needFilter);
+      el.hidden = !matchesList(k);
     });
     document.querySelectorAll(`.tick[data-key="${k}"]`).forEach(el => {
       el.setAttribute("aria-pressed", String(on));
@@ -656,9 +675,9 @@ function sync() {
   document.querySelectorAll(".group").forEach(g => { g.hidden = ![...g.querySelectorAll(".card")].some(c => !c.hidden); });
   const allDone = document.getElementById("all-done-note");
   if (allDone) allDone.hidden = !(onlyLeft && n === TOTAL);
-  const visibleCount = Object.keys(ITEMS).filter(k => !(onlyLeft && done[k]) && matchesNeed(k, needFilter)).length;
+  const visibleCount = Object.keys(ITEMS).filter(matchesList).length;
   const result = document.getElementById("filter-result");
-  if (result) result.textContent = `${visibleCount}種類を表示 / 全${Object.keys(ITEMS).length}種類（予定数は上の残り個数）`;
+  if (result) result.textContent = `${visibleCount}種類を表示 / 全${Object.keys(ITEMS).length}種類（見送りは予定数に含みません）`;
   const noMatch = document.getElementById("no-match-note");
   if (noMatch) noMatch.hidden = visibleCount !== 0 || (onlyLeft && n === TOTAL);
   const left = TOTAL - n;
@@ -671,7 +690,7 @@ function sync() {
 
 document.addEventListener("click", e => {
   const tick = e.target.closest(".tick");
-  if (tick) { const k = tick.dataset.key; done[k] = !done[k]; store.set("tds1104-done", done); sync(); return; }
+  if (tick) { const k = tick.dataset.key; if (!isPlanned(k)) return; done[k] = !done[k]; store.set("tds1104-done", done); sync(); return; }
   const f = e.target.closest("[data-filter]");
   if (f) {
     onlyLeft = f.dataset.filter === "left"; store.set("tds1104-onlyleft", onlyLeft);
