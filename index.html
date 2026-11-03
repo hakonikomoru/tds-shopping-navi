@@ -49,6 +49,10 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
 a { color: var(--harbor); }
+.product-link { color: var(--harbor); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+.product-link:hover { text-decoration-thickness: 2px; }
+.chip .product-link, .card.is-skipped .product-link, .card.is-done .product-link { color: inherit; }
+
 :focus-visible { outline: 3px solid var(--harbor); outline-offset: 2px; }
 h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.35; margin: 0; }
 button { font: inherit; color: inherit; }
@@ -437,7 +441,7 @@ const BOTH_PURCHASE = {
 };
 const ITEMS = {
   charm:   { name: "雪だるま風ぬいぐるみチャーム", short: "チャーム", price: "各2,300円", qty: 5, img: "charm-duffy.jpg", purchase: BOTH_PURCHASE, url: "/iframe/goods/17872101062/",
-             variants: [["charm-duffy.jpg", "ダッフィー", 2, "each"], ["charm-shelliemay.jpg", "シェリーメイ", 1], ["charm-linabell.jpg", "リーナ・ベル", 2, "each"]],
+             variants: [["charm-duffy.jpg", "ダッフィー", 2, "each", "/goods/116002154/"], ["charm-shelliemay.jpg", "シェリーメイ", 1, null, "/goods/116002155/"], ["charm-linabell.jpg", "リーナ・ベル", 2, "each", "/goods/116002160/"]],
              points: ["全7種のうち、この3種類だけ", "ダッフィーとリーナ・ベルは、二人がそれぞれ1個ずつ買う（同じ物は1人1個まで）", "アプリ通販でも注文できる"], places: SHOP_PLACES },
   figure:  { name: "雪だるま風フィギュア（単品）", short: "フィギュア", price: "1,500円", qty: 2, split: "each", img: "g-figure.jpg",
              purchase: { label: "店頭：単品／配送：BOXのみ", note: "予定の単品2個は店頭で購入。配送注文はBOX販売のみなので、単品2個の代わりとして注文しないよう注意。" }, url: "/goods/113002820/",
@@ -550,7 +554,8 @@ function purchasedCount() {
 }
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-const itemLabel = key => ITEMS[key].skipped ? `<s>${esc(ITEMS[key].short)}</s>（見送り）` : esc(ITEMS[key].short);
+const productLink = (url, label, accessibleLabel) => `<a class="product-link" href="${esc(url)}" target="_blank" rel="noopener"${accessibleLabel ? ` aria-label="${esc(accessibleLabel)}"` : ""}>${label}</a>`;
+const itemLabel = key => productLink(OFFICIAL + ITEMS[key].url, ITEMS[key].skipped ? `<s>${esc(ITEMS[key].short)}</s>（見送り）` : esc(ITEMS[key].short), `${ITEMS[key].name}の公式商品ページ（別タブ）`);
 const mtag = m => `<span class="mtag ${m.id}">${m.label}</span>`;
 const splitHTML = sp => sp === "each" ? '<span class="split each">二人で1個ずつ</span>' : "";
 const CHECK_SVG ='<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
@@ -597,7 +602,7 @@ function placeHTML(key, extra, chips, id) {
       <span class="pin"><span class="pin-label"></span></span>
       ${chips ? `<span class="chips">${chips}</span>` : `<span class="parea">${esc(p.area)}</span>`}
       ${extra || menu ? `<span class="pextra">${esc(extra || menu)}</span>` : ""}
-      ${foodItems.length >= 2 ? `<span class="common-badge">スーベニア${foodItems.length}種類をまとめて：${foodItems.map(k => esc(ITEMS[k].short)).join("＋")}</span>` : ""}
+      ${foodItems.length >= 2 ? `<span class="common-badge">スーベニア${foodItems.length}種類をまとめて：${foodItems.map(itemLabel).join("＋")}</span>` : ""}
       <span class="place-signals"><span class="signal ${access.tone}">${esc(access.label)}</span></span>
       <span class="place-guidance">${esc(access.wait)}</span>
     </summary>
@@ -611,15 +616,15 @@ function placeHTML(key, extra, chips, id) {
 
 function cardHTML(key) {
   const it = ITEMS[key], m = METHOD_OF[key];
-  const variants = it.variants ? `<div class="variants">${it.variants.map(([img, n, q, sp]) =>
-    `<div class="variant"><img src="img/${img}" alt="${esc(n)}のチャーム" loading="lazy"><span>${esc(n)}</span><b>${q}個</b>${splitHTML(sp)}</div>`).join("")}</div>` : "";
+  const variants = it.variants ? `<div class="variants">${it.variants.map(([img, n, q, sp, url]) =>
+    `<div class="variant"><img src="img/${img}" alt="${esc(n)}のチャーム" loading="lazy"><span>${productLink(OFFICIAL + url, esc(n), `${n}のチャームの公式商品ページ（別タブ）`)}</span><b>${q}個</b>${splitHTML(sp)}</div>`).join("")}</div>` : "";
   const places = it.places ? `<div class="places"><div class="places-label">${m.id === "shop" ? "対象ショップ（どれか1店）" : `買える場所 ${it.places.length}か所`}・タップで地図</div>${it.places.map(([k, x]) => placeHTML(k, x)).join("")}</div>` : "";
   const moreLabel = it.places ? (m.id === "shop" ? "買い方と対象ショップ" : `買い方と場所（${it.places.length}か所）`) : "買い方";
   return `<article class="card${it.skipped ? " is-skipped" : ""}" data-key="${key}" id="item-${key}">
     <div class="card-main">
       <img class="thumb" src="img/${it.img}" alt="${esc(it.name)}" loading="lazy">
       <div>
-        <h3>${it.skipped ? `<s>${esc(it.name)}</s>` : esc(it.name)}</h3>
+        <h3>${productLink(OFFICIAL + it.url, it.skipped ? `<s>${esc(it.name)}</s>` : esc(it.name), `${it.name}の公式商品ページ（別タブ）`)}</h3>
         <div class="sub"><span class="qty">${it.skipped ? `<s>${it.qty}個</s>` : `${it.qty}個`}</span>${it.tentative ? '<span class="tentative">仮</span>' : ""}<span>${esc(it.price)}</span></div>
         ${it.skipped ? '<p class="skip-note">今回は買わない</p>' : ""}
         ${it.split ? `<div class="sub">${splitHTML(it.split)}</div>` : ""}
@@ -649,7 +654,7 @@ function menuCardHTML(item) {
   const status = Menu.periodStatus(item);
   return `<article class="menu-card${item.image ? "" : " no-photo"}">
     ${item.image ? `<a class="menu-photo" href="${esc(item.image)}" target="_blank" rel="noopener" aria-label="${esc(item.name)}の写真を拡大"><img src="${esc(item.image)}" alt="${esc(item.imageAlt || item.name)}" loading="lazy" decoding="async" width="400" height="300" data-menu-image><span hidden>写真を読み込めませんでした</span></a>` : ""}
-    <div class="menu-card-body"><h4>${esc(item.name)}</h4>
+    <div class="menu-card-body"><h4>${productLink(item.url || MENU_DATA.restaurants[menuPlace].source, esc(item.name), `${item.name}の${item.url ? "公式詳細" : "公式店舗メニュー"}（別タブ）`)}</h4>
       <p class="menu-price">${item.prices.map(esc).join("<br>")}</p>
       ${item.periods.length ? `<p class="menu-period ${status}">${item.periods.map(p => p.text.split("～").map((part,n) => `<span class="menu-date">${n ? "～ " : ""}${esc(part.trim().replace(/(\d{4})年(\d{1,2})月(\d{1,2})日/g,"$1/$2/$3"))}</span>`).join(" ")).join("<br>")}<br>${status === "inside" ? "11/4は販売期間内" : status === "outside" ? "11/4は販売期間外" : "期間は公式で確認"}</p>` : ""}
       ${item.notes.map(n => `<p class="menu-item-note">${esc(n)}</p>`).join("")}
@@ -669,7 +674,7 @@ function updateMenuResults() {
 }
 function menuViewHTML() {
   const restaurant = MENU_DATA.restaurants[menuPlace], access = ACCESS[PLACE_ACCESS[menuPlace]];
-  return `<h2>飲食店のメニュー</h2><p class="view-intro">掲載16店の食事・デザート・飲み物・スーベニア。写真はタップで拡大できます。</p>
+  return `<h2>飲食店のメニュー</h2><p class="view-intro">掲載16店の食事・デザート・飲み物・スーベニア。商品名で公式ページ、写真で拡大表示を開けます。</p>
     <div class="menu-controls">
       <label class="menu-field" for="menu-place">お店を選ぶ<select id="menu-place" aria-label="お店を選ぶ">${AREAS.map(a=>`<optgroup label="${esc(a)}">${Object.keys(MENU_DATA.restaurants).filter(k=>LOC[k].area===a).map(k=>`<option value="${k}"${k===menuPlace?' selected':''}>${esc(LOC[k].name)}</option>`).join("")}</optgroup>`).join("")}</select></label>
       <label class="menu-field" for="menu-search">この店のメニューを検索<input type="search" id="menu-search" placeholder="例：カレー、グミ、ドリンク" value="${esc(menuQuery)}" autocomplete="off"></label>
@@ -737,7 +742,7 @@ const VIEWS = {
         <div class="group-head">${mtag(m)}<h2>${m.title}</h2></div>
         ${m.id === "food" ? commonFoodHTML() : ""}
         <div class="for">${m.id === "app" ? "配送注文のみ（当面）" : "対象"}：${m.items.map(itemLabel).join("・")}</div>
-        ${m.alsoItems ? `<div class="also-purchase"><strong>店頭＋配送注文</strong><p>${m.alsoItems.map(k => ITEMS[k].short).join("・")}</p><p class="note">どちらかの方法で予定数を購入。店頭で買えた分を配送でも重ねて注文しないようにしてください。</p></div>` : ""}
+        ${m.alsoItems ? `<div class="also-purchase"><strong>店頭＋配送注文</strong><p>${m.alsoItems.map(itemLabel).join("・")}</p><p class="note">どちらかの方法で予定数を購入。店頭で買えた分を配送でも重ねて注文しないようにしてください。</p></div>` : ""}
         <div class="card-guidance">${guidanceHTML(m.id === "food" ? { ...GUIDANCE.gummy, hint: "店によって注文方法が異なります。FSの3店はモバイルオーダーが必要。ほかは店頭注文も選べます。" } : GUIDANCE[m.id])}</div>
         <ol class="steps">${m.steps.map(x => `<li>${x}</li>`).join("")}</ol>
         <div class="callout">${m.callout}</div>
