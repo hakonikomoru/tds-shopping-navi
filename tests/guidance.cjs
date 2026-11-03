@@ -5,6 +5,7 @@ const path = process.argv[2] || require('node:path').join(__dirname, '..', 'inde
 const html = fs.readFileSync(path, 'utf8');
 const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
 const ctx = vm.createContext({localStorage:{getItem:()=>null,setItem(){}},document:{addEventListener(){}},location:{hash:''}});
+for (const file of ['data/menus.js','menu-utils.js']) vm.runInContext(fs.readFileSync(require('node:path').join(require('node:path').dirname(path),file),'utf8'),ctx);
 vm.runInContext(script.replace(/show\(VIEWS\[hash\][^\n]+/, ''), ctx);
 const run = expr => vm.runInContext(expr, ctx);
 assert.equal(run('TOTAL'),17,'見送りのカップ1個を購入予定数から除外');

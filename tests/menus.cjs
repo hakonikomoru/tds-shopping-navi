@@ -1,0 +1,42 @@
+const fs = require('node:fs');
+const path = require('node:path');
+const vm = require('node:vm');
+const assert = require('node:assert/strict');
+const root = path.join(__dirname, '..');
+const ctx = vm.createContext({localStorage:{getItem:()=>null,setItem(){}},document:{addEventListener(){}},location:{hash:''}});
+for (const file of ['data/menus.js','menu-utils.js']) vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),ctx);
+const html = fs.readFileSync(path.join(root,'index.html'),'utf8');
+vm.runInContext(html.match(/<script>([\s\S]*?)<\/script>/)[1].replace(/show\(VIEWS\[hash\][^\n]+/, ''),ctx);
+const run = s => vm.runInContext(s,ctx);
+const data=run('MENU_DATA');
+assert.equal(Object.keys(data.restaurants).length,16);
+assert.equal(run("Object.keys(LOC).filter(k=>!k.startsWith('pc') && LOC[k].url.includes('/restaurant/')).every(k=>MENU_DATA.restaurants[k])"),true,'掲載16店を欠落させない');
+let entries=0,photos=0;
+for(const [key,r] of Object.entries(data.restaurants)){
+ const items=r.sections.flatMap(s=>s.items);
+ assert.equal(items.length,r.observedCards+r.observedDrinkRows,key+' 全カードと写真なし飲物の取込件数');
+ assert.ok(items.every(i=>i.name&&i.prices.length),key+' 名称と価格');
+ for(const i of items){ if(i.image){photos++;assert.ok(fs.existsSync(path.join(root,i.image)),i.image+' 写真実体');assert.match(i.imageSource,/^https:\/\/media1\.tokyodisneyresort\.jp\//);} }
+ entries+=items.length;
+}
+assert.equal(entries,466);assert.equal(photos,327);
+assert.equal(run("MENU_DATA.restaurants.zambini.sections.flatMap(s=>s.items).filter(i=>i.name==='グミキャンディー、ミニスナックケース付き').length"),3,'同名の別デザインを保持');
+assert.deepEqual(Array.from(run("MENU_DATA.restaurants.arendelle.sections.flatMap(s=>s.items).find(i=>i.name==='シェフのおすすめセット').prices")),['セット ¥2,100','単品 ¥1,480']);
+assert.equal(run("Menu.periodStatus({periods:[{text:'2026年11月4日 ～ 2026年11月4日'}]},'2026-11-04')"),'inside','開始日・終了日を含む');
+assert.equal(run("Menu.periodStatus({periods:[{text:'2026年11月5日 ～'}]},'2026-11-04')"),'outside');
+assert.equal(run("Menu.periodStatus({periods:[{text:'2026年7月1日 ～'}]},'2026-11-04')"),'inside','終了日未定を扱う');
+assert.equal(run("Menu.periodStatus({periods:[{text:'2026年1月1日 ～ 2026年10月31日'}]},'2026-11-04')"),'outside');
+assert.equal(run("Menu.periodStatus({periods:[{text:'未定'}]})"),'unknown','読めない期間を断定しない');
+assert.equal(run("Menu.matches({name:'ホットチョコレート',prices:['¥800'],periods:[]},'ドリンク','ほっと ８００',true)"),true,'ひらがな・全角・複数語検索と期間記載なし');
+assert.equal(run("Menu.matches({name:'ホットチョコレート',prices:['¥800'],periods:[]},'ドリンク','カレー',false)"),false);
+assert.equal(run("Menu.matches({name:'ケーキ',prices:[],periods:[{text:'2026年11月5日 ～'}]},'デザート','',true)"),false);
+assert.equal(run("Menu.matches({name:'ケーキ',prices:[],periods:[{text:'2026年11月5日 ～'}]},'デザート','',false)"),true,'全件表示では将来販売品も残す');
+assert.match(run('VIEWS.menu()'),/メニュー/);
+assert.match(run("placeHTML('zambini')"),/data-open-menu="zambini"/);
+assert.doesNotMatch(run("placeHTML('pcDock')"),/data-open-menu/);
+assert.match(run("menuQuery='存在しない料理999';menuResultsHTML()"),/見つかりませんでした/);
+run("menuQuery=''; menuPlace='arendelle'");
+assert.match(run('menuResultsHTML()'),/セット ¥2,100/);
+assert.match(run('menuResultsHTML()'),/単品 ¥1,480/);
+assert.equal(run('TOTAL'),17);
+console.log('PASS: 16店466掲載・327写真表示・同名別商品・セット価格・検索・販売期間');

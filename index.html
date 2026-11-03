@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap">
 <style>
-/* スマホ片手用：画面下のタブで「リスト／場所／買い方／注意」を切り替える。1画面1つの役割 */
+/* スマホ片手用：画面下のタブで「リスト／場所／メニュー／買い方／注意」を切り替える。1画面1つの役割 */
 /* 屋外の日差しでも読みやすいよう、端末のダークモードに関係なく常に明るい配色 */
 :root {
   --bg: #f1f9fc;
@@ -80,7 +80,7 @@ nav.tabs {
   padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px);
   box-shadow: 0 -4px 16px rgba(15, 80, 100, .08);
 }
-nav.tabs .row { max-width: 600px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+nav.tabs .row { max-width: 600px; margin: 0 auto; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }
 nav.tabs button {
   border: 0; background: none; height: var(--tabbar); cursor: pointer;
   display: grid; place-items: center; align-content: center; gap: 2px;
@@ -327,6 +327,41 @@ details.place { scroll-margin-top: calc(130px + env(safe-area-inset-top, 0px)); 
 .also-purchase { padding: 10px 12px; border-radius: 10px; background: #edf7fc; border: 1px solid #c8e2ef; font-size: 14px; }
 .also-purchase strong { color: #326480; }
 .also-purchase p { margin: 4px 0 0; }
+
+/* 飲食店メニュー：写真付きカードと、画像のない飲み物の一覧 */
+.menu-controls { display: grid; gap: 11px; padding: 14px; border: 1px solid var(--line); border-radius: 16px; background: #fff; }
+.menu-field { display: grid; gap: 5px; font-size: 13px; font-weight: 700; min-width: 0; }
+.menu-field select, .menu-field input { width: 100%; min-width: 0; min-height: 46px; border: 1px solid #a9c8d9; border-radius: 9px; background: #f7fbfe; color: var(--fg); font: inherit; font-size: 16px; padding: 9px; }
+.menu-check { display: flex; align-items: center; gap: 8px; font-size: 13px; min-height: 36px; }
+.menu-check input { width: 18px; height: 18px; flex: none; accent-color: var(--harbor); }
+.menu-store { display: grid; gap: 9px; }
+.menu-store h3 { font-size: 18px; }
+.menu-store .note, .menu-source { margin: 0; font-size: 12.5px; color: var(--muted); }
+.menu-links { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.menu-button { min-height: 44px; padding: 8px 12px; border: 1px solid #83b3cd; border-radius: 9px; background: #fff; color: #326480; font-size: 13px; font-weight: 700; cursor: pointer; text-decoration: none; }
+.common-list .menu-button { margin: 8px 12px 12px; }
+.menu-results { display: grid; gap: 20px; }
+.menu-count { margin: 0; font-size: 13px; font-weight: 700; color: var(--muted); }
+.menu-section { display: grid; gap: 10px; }
+.menu-section h3 { font-size: 16px; padding-left: 9px; border-left: 3px solid #8bbbd3; text-wrap: pretty; }
+.menu-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
+.menu-card { min-width: 0; border: 1px solid var(--line); border-radius: 13px; background: #fff; overflow: hidden; }
+.menu-photo { display: grid; place-items: center; aspect-ratio: 4 / 3; background: #fff; color: var(--muted); text-decoration: none; }
+.menu-photo img { width: 100%; height: 100%; aspect-ratio: 4 / 3; object-fit: contain; }
+.menu-photo span { font-size: 12px; padding: 12px; text-align: center; }
+.menu-card-body { padding: 11px; display: grid; gap: 7px; }
+.menu-card h4 { margin: 0; font-size: 14px; line-height: 1.55; overflow-wrap: anywhere; }
+.menu-price { color: #326480; font-size: 14px; font-weight: 700; margin: 0; }
+.menu-period, .menu-item-note { margin: 0; font-size: 11.5px; line-height: 1.6; color: var(--muted); }
+.menu-date { display: inline-block; white-space: nowrap; }
+.menu-period.outside { color: #9b5517; }
+.menu-detail { font-size: 12px; min-height: 30px; display: inline-flex; align-items: center; justify-self: start; }
+.menu-card.no-photo { grid-column: 1 / -1; }
+.menu-card.no-photo .menu-card-body { grid-template-columns: minmax(0,1fr) auto; align-items: start; padding: 12px; }
+.menu-card.no-photo .menu-price { text-align: right; max-width: 120px; }
+.menu-card.no-photo .menu-item-note, .menu-card.no-photo .menu-period { grid-column: 1 / -1; }
+.menu-empty { padding: 22px 14px; background: #fff; border: 1px dashed #a9c8d9; border-radius: 14px; font-size: 14px; }
+@media (max-width: 360px) { .menu-grid { gap: 8px; } .menu-card-body { padding: 9px; } .menu-card h4 { font-size: 13px; } }
 </style>
 </head>
 <body>
@@ -351,11 +386,14 @@ details.place { scroll-margin-top: calc(130px + env(safe-area-inset-top, 0px)); 
   <div class="row" role="tablist">
     <button role="tab" data-view="list" aria-selected="true"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg>リスト</button>
     <button role="tab" data-view="where" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>場所</button>
+    <button role="tab" data-view="menu" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v5a3 3 0 0 0 6 0V3M7 3v18M20 3c-4 2-5 6-5 10h5M20 3v18"/></svg>メニュー</button>
     <button role="tab" data-view="how" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M6 7h12l-1.2 12.2a1 1 0 0 1-1 .8H8.2a1 1 0 0 1-1-.8z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>買い方</button>
     <button role="tab" data-view="rules" aria-selected="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.5"/></svg>注意</button>
   </div>
 </nav>
 
+<script src="data/menus.js"></script>
+<script src="menu-utils.js"></script>
 <script>
 const LOC = {
   mcduck:    { name: "マクダックス・デパートメントストア", area: "アメリカンウォーターフロント", url: "/tds/shop/detail/621/", img: "map-mcduck.jpg" },
@@ -538,6 +576,7 @@ function commonFoodHTML() {
     <ul class="common-list">${places.map(key => `<li>
       <button type="button" class="common-place" data-common-place="${key}" aria-label="${esc(LOC[key].name)}の地図を表示"><span><b>${esc(LOC[key].name)}</b><small>${esc(LOC[key].area)}</small></span><span class="common-map" aria-hidden="true">地図</span></button>
       <div class="common-items">${foodItemsAt(key).map(k => `<span class="chip" data-chip="${k}">${itemLabel(k)}</span>`).join("")}</div>
+      <button type="button" class="menu-button" data-open-menu="${key}">この店の全メニューを見る</button>
     </li>`).join("")}</ul>
     <p class="note">タンブラーは対象ドリンク、グミケースはグミ付きメニューをそれぞれ注文。カップは見送りのため、共通店の条件に含めていません。</p>
     <p class="note">11/3に公式の販売店舗を確認。当日の在庫はアプリ・店頭で確認してください。<a href="${OFFICIAL}${ITEMS.tumbler.url}" target="_blank" rel="noopener">タンブラーの公式情報</a>／<a href="${OFFICIAL}${ITEMS.gummy.url}" target="_blank" rel="noopener">グミケースの公式情報</a></p>
@@ -562,6 +601,7 @@ function placeHTML(key, extra, chips, id) {
       <span class="place-guidance">${esc(access.wait)}</span>
     </summary>
     <div class="place-body">
+      ${MENU_DATA.restaurants[key] ? `<button type="button" class="menu-button" data-open-menu="${key}">この店の全メニューを見る</button>` : ""}
       <p class="note">${esc(access.detail)}</p>
       <a href="img/${p.img}" target="_blank" rel="noopener"><img data-src="img/${p.img}" alt="${esc(p.name)}の場所（公式マップ）" width="800" height="450"></a>
       <div class="place-links"><span class="note">地図をタップで拡大</span><a href="${OFFICIAL}${p.url}" target="_blank" rel="noopener">公式の店舗ページ</a></div>
@@ -600,7 +640,50 @@ function cardHTML(key) {
   </article>`;
 }
 
+
+let menuPlace = MENU_DATA.restaurants[store.get("tds1104-menu-place", "zambini")] ? store.get("tds1104-menu-place", "zambini") : "zambini";
+let menuQuery = "";
+let menuPeriodOnly = false;
+function menuCardHTML(item) {
+  const status = Menu.periodStatus(item);
+  return `<article class="menu-card${item.image ? "" : " no-photo"}">
+    ${item.image ? `<a class="menu-photo" href="${esc(item.image)}" target="_blank" rel="noopener" aria-label="${esc(item.name)}の写真を拡大"><img src="${esc(item.image)}" alt="${esc(item.imageAlt || item.name)}" loading="lazy" decoding="async" width="400" height="300" data-menu-image><span hidden>写真を読み込めませんでした</span></a>` : ""}
+    <div class="menu-card-body"><h4>${esc(item.name)}</h4>
+      <p class="menu-price">${item.prices.map(esc).join("<br>")}</p>
+      ${item.periods.length ? `<p class="menu-period ${status}">${item.periods.map(p => p.text.split("～").map((part,n) => `<span class="menu-date">${n ? "～ " : ""}${esc(part.trim().replace(/(\d{4})年(\d{1,2})月(\d{1,2})日/g,"$1/$2/$3"))}</span>`).join(" ")).join("<br>")}<br>${status === "inside" ? "11/4は販売期間内" : status === "outside" ? "11/4は販売期間外" : "期間は公式で確認"}</p>` : ""}
+      ${item.notes.map(n => `<p class="menu-item-note">${esc(n)}</p>`).join("")}
+      ${item.url ? `<a class="menu-detail" href="${esc(item.url)}" target="_blank" rel="noopener">公式の詳細 ↗</a>` : ""}
+    </div></article>`;
+}
+function menuResultsHTML() {
+  const restaurant = MENU_DATA.restaurants[menuPlace];
+  const sections = restaurant.sections.map(s => ({...s, items:s.items.filter(i => Menu.matches(i,s.category,menuQuery,menuPeriodOnly))})).filter(s => s.items.length);
+  const count = sections.reduce((n,s) => n+s.items.length,0);
+  const total = restaurant.sections.reduce((n,s) => n+s.items.length,0);
+  const photos = sections.reduce((n,s) => n+s.items.filter(i=>i.image).length,0);
+  return `<p class="menu-count" role="status">${count}件を表示 / 全${total}件・写真付き${photos}件</p>${count ? sections.map(s=>`<section class="menu-section"><h3>${esc(s.category.replace('「東京ディズニーシー25周年“スパークリング・ジュビリー”」','25周年の'))}</h3><div class="menu-grid">${s.items.map(menuCardHTML).join("")}</div></section>`).join("") : '<p class="menu-empty">メニューが見つかりませんでした。検索語や販売期間の絞り込みを変えてみてください。</p>'}`;
+}
+function updateMenuResults() {
+  document.getElementById("menu-results").innerHTML = menuResultsHTML();
+}
+function menuViewHTML() {
+  const restaurant = MENU_DATA.restaurants[menuPlace], access = ACCESS[PLACE_ACCESS[menuPlace]];
+  return `<h2>飲食店のメニュー</h2><p class="view-intro">掲載16店の食事・デザート・飲み物・スーベニア。写真はタップで拡大できます。</p>
+    <div class="menu-controls">
+      <label class="menu-field" for="menu-place">お店を選ぶ<select id="menu-place" aria-label="お店を選ぶ">${AREAS.map(a=>`<optgroup label="${esc(a)}">${Object.keys(MENU_DATA.restaurants).filter(k=>LOC[k].area===a).map(k=>`<option value="${k}"${k===menuPlace?' selected':''}>${esc(LOC[k].name)}</option>`).join("")}</optgroup>`).join("")}</select></label>
+      <label class="menu-field" for="menu-search">この店のメニューを検索<input type="search" id="menu-search" placeholder="例：カレー、グミ、ドリンク" value="${esc(menuQuery)}" autocomplete="off"></label>
+      <label class="menu-check"><input type="checkbox" id="menu-period"${menuPeriodOnly?' checked':''}>11/4の販売期間外を除く（期間記載なしも含む）</label>
+    </div>
+    <section class="menu-store"><h3>${esc(restaurant.title)}</h3><p class="note">${esc(LOC[menuPlace].area)}</p>
+      <div class="signals"><span class="signal ${access.tone}">${esc(access.label)}</span>${foodItemsAt(menuPlace).length>=2?'<span class="common-badge">予定のスーベニア2種類をまとめて</span>':''}</div>
+      <div class="menu-links"><button type="button" class="menu-button" data-menu-map="${menuPlace}">お店の地図</button><a class="menu-button" href="${esc(restaurant.source)}" target="_blank" rel="noopener">公式の最新メニュー ↗</a></div>
+    </section>
+    <div id="menu-results" class="menu-results">${menuResultsHTML()}</div>
+    <p class="menu-source">2026/11/3の公式掲載を収録。販売期間内でも品切れ・変更の場合があります。<br>名称・価格・画像：東京ディズニーリゾート公式サイト。セット／単品／追加料金は記載どおり表示。原材料やアレルギー情報は公式の詳細で確認してください。</p>`;
+}
+
 const VIEWS = {
+  menu: menuViewHTML,
   list() {
     return `<section class="prep" aria-label="並ぶものとアプリの準備">
         <svg class="snowflake note-flake" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2v20M3.34 7l17.32 10M3.34 17 20.66 7M9 4l3 3 3-3M9 20l3-3 3 3M3.6 10.6l4.1-1.1-1.1-4.1M17.4 18.6l-1.1-4.1 4.1-1.1M6.6 18.6l1.1-4.1-4.1-1.1M20.4 10.6l-4.1-1.1 1.1-4.1"/></svg>
@@ -740,6 +823,19 @@ function sync() {
 }
 
 document.addEventListener("click", e => {
+  const menuLink = e.target.closest("[data-open-menu]");
+  if (menuLink && MENU_DATA.restaurants[menuLink.dataset.openMenu]) {
+    menuPlace = menuLink.dataset.openMenu; menuQuery = "";
+    store.set("tds1104-menu-place", menuPlace); show("menu", true); return;
+  }
+  const menuMap = e.target.closest("[data-menu-map]");
+  if (menuMap) {
+    show("where", true);
+    const place = document.getElementById(`where-${menuMap.dataset.menuMap}`);
+    if (place) { place.open = true; place.querySelector("summary").focus({preventScroll:true}); place.scrollIntoView({block:"start"}); }
+    return;
+  }
+
   if (e.target.closest("[data-open-common]")) {
     show("where", true);
     document.getElementById("common-food")?.focus({ preventScroll: true });
@@ -772,6 +868,20 @@ document.addEventListener("click", e => {
   const tab = e.target.closest("nav.tabs button");
   if (tab) show(tab.dataset.view, true);
 });
+document.addEventListener("change", e => {
+  if (e.target.id === "menu-place" && MENU_DATA.restaurants[e.target.value]) {
+    menuPlace = e.target.value; menuQuery = "";
+    store.set("tds1104-menu-place", menuPlace); show("menu", false);
+    document.getElementById("menu-place").focus({preventScroll:true});
+  }
+  if (e.target.id === "menu-period") { menuPeriodOnly = e.target.checked; updateMenuResults(); }
+});
+document.addEventListener("input", e => {
+  if (e.target.id === "menu-search") { menuQuery = e.target.value; updateMenuResults(); }
+});
+document.addEventListener("error", e => {
+  if (e.target.matches?.("img[data-menu-image]")) { e.target.hidden = true; e.target.nextElementSibling.hidden = false; }
+}, true);
 // 地図は開いたときだけ読み込む（園内の通信量を抑える）
 document.addEventListener("toggle", e => {
   const d = e.target;
