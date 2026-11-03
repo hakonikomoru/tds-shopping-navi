@@ -294,20 +294,25 @@ footer { border-top: 1px solid var(--line); padding-top: 12px; }
 }
 
 /* 共通レストランは購入予定のスーベニアから案内。 */
-.common-panel { background: #fff; border: 1px solid #bddae9; border-radius: 16px; padding: 14px; display: grid; gap: 10px; min-width: 0; }
-.common-panel h2 { font-size: 18px; color: #326480; }
-.common-panel > p { margin: 0; }
+.common-panel { background: #fff; border: 1px solid #bddae9; border-radius: 16px; min-width: 0; }
+.common-panel > summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px; min-height: 70px; list-style: none; cursor: pointer; color: #326480; }
+.common-panel > summary::-webkit-details-marker { display: none; }
+.common-title { display: block; text-wrap: balance; font-family: var(--font-display); font-size: 17px; font-weight: 700; line-height: 1.5; }
+.common-panel > summary small { display: block; color: var(--muted); font-size: 12px; margin-top: 3px; }
+.common-toggle { flex: none; display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; }
+.common-toggle::before { content: "開く"; }
+.common-toggle::after { content: ""; width: 8px; height: 8px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg) translateY(-2px); }
+.common-panel[open] > summary .common-toggle::before { content: "閉じる"; }
+.common-panel[open] > summary .common-toggle::after { transform: rotate(-135deg) translateY(-2px); }
+.common-panel[open] > summary { border-bottom: 1px solid var(--line); }
+.common-body { padding: 12px; display: grid; gap: 10px; }
+.common-body > p { margin: 0; }
 .common-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
-.common-list li { background: #f1f9fc; border: 1px solid var(--line); border-radius: 12px; padding: 0 10px 10px; }
-.common-place { width: 100%; min-height: 60px; padding: 10px 0 8px; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; background: none; border: 0; text-align: left; cursor: pointer; }
-.common-place b { display: block; font-size: 14px; line-height: 1.5; }
-.common-place small { display: block; color: var(--muted); font-size: 12px; }
-.common-map { background: #deeff8; color: #326480; border-radius: 999px; padding: 5px 9px; font-size: 12px; font-weight: 700; white-space: nowrap; }
-.common-items { display: flex; flex-wrap: wrap; gap: 4px; }
+.common-list li { min-width: 0; }
+.common-list details.place { background: #f1f9fc; }
+.common-list .chips .parea { flex-basis: 100%; }
+.common-list .common-badge { display: none; }
 .common-badge { grid-column: 1 / -1; justify-self: start; padding: 2px 8px; margin-top: 4px; border-radius: 6px; background: #deeff8; color: #326480; font-size: 12px; font-weight: 700; }
-.common-shortcut { border: 1px solid #bddae9; border-radius: 12px; background: #edf7fc; padding: 10px 12px; display: grid; gap: 6px; }
-.common-shortcut p { margin: 0; color: #41647a; font-size: 13px; }
-.common-shortcut button { justify-self: start; min-height: 44px; padding: 8px 12px; border: 1px solid #83b3cd; border-radius: 9px; background: #fff; color: #326480; font-size: 14px; font-weight: 700; cursor: pointer; }
 details.place { scroll-margin-top: calc(130px + env(safe-area-inset-top, 0px)); }
 
 /* 見送りは購入済みと区別し、内容を残して取り消し線を付ける。 */
@@ -339,7 +344,6 @@ details.place { scroll-margin-top: calc(130px + env(safe-area-inset-top, 0px)); 
 .menu-store .note, .menu-source { margin: 0; font-size: 12.5px; color: var(--muted); }
 .menu-links { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .menu-button { min-height: 44px; padding: 8px 12px; border: 1px solid #83b3cd; border-radius: 9px; background: #fff; color: #326480; font-size: 13px; font-weight: 700; cursor: pointer; text-decoration: none; }
-.common-list .menu-button { margin: 8px 12px 12px; }
 .menu-results { display: grid; gap: 20px; }
 .menu-count { margin: 0; font-size: 13px; font-weight: 700; color: var(--muted); }
 .menu-section { display: grid; gap: 10px; }
@@ -563,24 +567,21 @@ function foodItemsAt(placeKey) {
 function commonFoodPlaces() {
   return Object.keys(LOC).filter(key => foodItemsAt(key).length >= 2);
 }
-function commonFoodShortcut() {
-  const count = commonFoodPlaces().length;
-  return count ? `<div class="common-shortcut"><p>購入予定のスーベニアを同じお店で。</p><button type="button" data-open-common>まとめて買える${count}店を見る</button></div>` : "";
-}
 function commonFoodHTML() {
   const places = commonFoodPlaces();
   if (!places.length) return "";
-  return `<section class="common-panel" id="common-food" tabindex="-1" aria-label="まとめて買えるレストラン">
-    <h2>まとめて買えるレストラン</h2>
-    <p class="note">購入予定のスーベニアを2種類以上扱う${places.length}店。店名をタップすると地図が開きます。</p>
-    <ul class="common-list">${places.map(key => `<li>
-      <button type="button" class="common-place" data-common-place="${key}" aria-label="${esc(LOC[key].name)}の地図を表示"><span><b>${esc(LOC[key].name)}</b><small>${esc(LOC[key].area)}</small></span><span class="common-map" aria-hidden="true">地図</span></button>
-      <div class="common-items">${foodItemsAt(key).map(k => `<span class="chip" data-chip="${k}">${itemLabel(k)}</span>`).join("")}</div>
-      <button type="button" class="menu-button" data-open-menu="${key}">この店の全メニューを見る</button>
-    </li>`).join("")}</ul>
-    <p class="note">タンブラーは対象ドリンク、グミケースはグミ付きメニューをそれぞれ注文。カップは見送りのため、共通店の条件に含めていません。</p>
-    <p class="note">11/3に公式の販売店舗を確認。当日の在庫はアプリ・店頭で確認してください。<a href="${OFFICIAL}${ITEMS.tumbler.url}" target="_blank" rel="noopener">タンブラーの公式情報</a>／<a href="${OFFICIAL}${ITEMS.gummy.url}" target="_blank" rel="noopener">グミケースの公式情報</a></p>
-  </section>`;
+  return `<details class="common-panel" id="common-food">
+    <summary><span><span class="common-title">まとめて買えるレストラン</span><small>購入予定のスーベニア・共通${places.length}店</small></span><span class="common-toggle" aria-hidden="true"></span></summary>
+    <div class="common-body">
+      <p class="note">購入予定のスーベニアを2種類以上扱うお店。店名をタップすると、この中で地図も開けます。</p>
+      <ul class="common-list">${places.map(key => {
+        const chips = `<span class="parea">${esc(LOC[key].area)}</span>` + foodItemsAt(key).map(k => `<span class="chip" data-chip="${k}">${itemLabel(k)}</span>`).join("");
+        return `<li>${placeHTML(key, null, chips, `common-${key}`)}</li>`;
+      }).join("")}</ul>
+      <p class="note">タンブラーは対象ドリンク、グミケースはグミ付きメニューをそれぞれ注文。カップは見送りのため、共通店の条件に含めていません。</p>
+      <p class="note">11/3に公式の販売店舗を確認。当日の在庫はアプリ・店頭で確認してください。<a href="${OFFICIAL}${ITEMS.tumbler.url}" target="_blank" rel="noopener">タンブラーの公式情報</a>／<a href="${OFFICIAL}${ITEMS.gummy.url}" target="_blank" rel="noopener">グミケースの公式情報</a></p>
+    </div>
+  </details>`;
 }
 
 function placeHTML(key, extra, chips, id) {
@@ -710,7 +711,7 @@ const VIEWS = {
       <p class="note" id="filter-result" role="status" aria-live="polite"></p>
       ${METHODS.map(m => `<div class="group" data-method="${m.id}">
         <div class="group-head">${mtag(m)}<h2>${m.title}</h2><span class="how">${m.how}</span></div>
-        ${m.id === "food" ? commonFoodShortcut() : ""}
+        ${m.id === "food" ? commonFoodHTML() : ""}
         ${m.items.map(cardHTML).join("")}
       </div>`).join("")}
       <p class="note" id="all-done-note" hidden>ぜんぶ買えました。</p>
@@ -734,7 +735,7 @@ const VIEWS = {
   how() {
     return METHODS.map(m => `<section class="method">
         <div class="group-head">${mtag(m)}<h2>${m.title}</h2></div>
-        ${m.id === "food" ? commonFoodShortcut() : ""}
+        ${m.id === "food" ? commonFoodHTML() : ""}
         <div class="for">${m.id === "app" ? "配送注文のみ（当面）" : "対象"}：${m.items.map(itemLabel).join("・")}</div>
         ${m.alsoItems ? `<div class="also-purchase"><strong>店頭＋配送注文</strong><p>${m.alsoItems.map(k => ITEMS[k].short).join("・")}</p><p class="note">どちらかの方法で予定数を購入。店頭で買えた分を配送でも重ねて注文しないようにしてください。</p></div>` : ""}
         <div class="card-guidance">${guidanceHTML(m.id === "food" ? { ...GUIDANCE.gummy, hint: "店によって注文方法が異なります。FSの3店はモバイルオーダーが必要。ほかは店頭注文も選べます。" } : GUIDANCE[m.id])}</div>
@@ -836,21 +837,6 @@ document.addEventListener("click", e => {
     return;
   }
 
-  if (e.target.closest("[data-open-common]")) {
-    show("where", true);
-    document.getElementById("common-food")?.focus({ preventScroll: true });
-    return;
-  }
-  const commonPlace = e.target.closest("[data-common-place]");
-  if (commonPlace) {
-    const place = document.getElementById(`where-${commonPlace.dataset.commonPlace}`);
-    if (place) {
-      place.open = true;
-      place.querySelector("summary").focus({ preventScroll: true });
-      place.scrollIntoView({ block: "start" });
-    }
-    return;
-  }
   const tick = e.target.closest(".tick");
   if (tick) { const k = tick.dataset.key; if (!isPlanned(k)) return; done[k] = !done[k]; store.set("tds1104-done", done); sync(); return; }
   const f = e.target.closest("[data-filter]");
